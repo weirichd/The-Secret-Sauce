@@ -1,9 +1,10 @@
-// Example program:
-// Using SDL2 to create an application window
-
 #include <SDL2/SDL.h>
 #include <stdio.h>
-#include <string.h>
+#include <x86intrin.h>
+
+#include "render.h"
+
+#pragma intrinsic(__rdtsc)
 
 int main(int argc, char* argv[]) {
     int width = 640;
@@ -23,16 +24,12 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    SDL_Surface *surface = SDL_CreateRGBSurface(0, width, height, 32, 0, 0, 0, 0);
     SDL_Surface *window_surface = SDL_GetWindowSurface(window);
-
-    int a = 0xFFFFFFFF;
-
-    memcpy(surface->pixels + 8000, &a, sizeof(int));
 
     int quit = 0;
 
     SDL_Event event;
+    unsigned long long last_cycle = __rdtsc();
 
     while (!quit) {
         SDL_PollEvent(&event);
@@ -43,8 +40,17 @@ int main(int argc, char* argv[]) {
                 break;
         }
 
-        SDL_BlitSurface(surface, NULL, window_surface, NULL);
+        render(window_surface->pixels);
+
         SDL_UpdateWindowSurface(window);
+
+        unsigned long long this_cycle = __rdtsc();
+
+        unsigned int delta_cycles = this_cycle - last_cycle;
+
+        printf("%u\n", delta_cycles);
+
+        last_cycle = this_cycle;
     }
 
     SDL_DestroyWindow(window);

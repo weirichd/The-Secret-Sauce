@@ -1,2 +1,2 @@
-game: main.c
-	gcc -o game main.c `pkg-config --libs --cflags sdl2`
+game: main.c render.c
+	gcc -o game main.c render.c `pkg-config --libs --cflags sdl2`

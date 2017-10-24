@@ -9,8 +9,8 @@
 #pragma intrinsic(__rdtsc)
 
 int main(int argc, char* argv[]) {
-    int width = 640;
-    int height = 480;
+    int width = 800;
+    int height = 800;
 
     SDL_Init(SDL_INIT_EVERYTHING);
 

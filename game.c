@@ -20,6 +20,6 @@ void initialize_game(Game_State *game) {
         game->stars_x[i] = (float)rand()/(float)(RAND_MAX) * 20.0f - 10.0f;
         game->stars_y[i] = (float)rand()/(float)(RAND_MAX) * 20.0f - 10.0f;
         game->stars_z[i] = (float)rand()/(float)(RAND_MAX) * 25.0f;
+        game->stars_col[i] = rand() | 0xFF;
     }
-
 }

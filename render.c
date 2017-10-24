@@ -12,7 +12,7 @@ void render(int *pixels, Game_State *game, int width, int height) {
     int origin_y = width / 2;
 
     // Draw the stars
-    for(i = 0; i < STAR_LEN; i++) {
+    for(int i = 0; i < STAR_LEN; i++) {
 
         // Transform to Clipspace
         float z = -1.0f / game->stars_z[i];
@@ -26,7 +26,7 @@ void render(int *pixels, Game_State *game, int width, int height) {
 
         // Clip and draw
         if(0 <= screen_x && width >= screen_x && 0 <= screen_y && height >= screen_y) {
-            pixels[width * screen_y + screen_x] = 0xFFFFFFFF;
+            pixels[width * screen_y + screen_x] = game->stars_col[i];
         }
     }
 }

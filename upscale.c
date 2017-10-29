@@ -1,8 +1,4 @@
-#include <string.h>
-
 #include "upscale.h"
-
-#include <stdio.h>
 
 void upscale(int *src, int *dest, int src_width, int src_height, int dest_width, int dest_height) {
     int w_scale = dest_width / src_width;

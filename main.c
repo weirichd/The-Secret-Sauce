@@ -7,13 +7,16 @@
 #include "render.h"
 #include "upscale.h"
 
+#include "mymath.h"
+
 #pragma intrinsic(__rdtsc)
 
 int main(int argc, char* argv[]) {
-    int width = 200;
-    int height = 200;
 
-    int upscale_factor = 4;
+    int width = 100;
+    int height = 100;
+
+    int upscale_factor = 7;
 
     SDL_Init(SDL_INIT_EVERYTHING);
 

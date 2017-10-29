@@ -3,11 +3,13 @@
 
 typedef struct Game_State {
 
-    float stars_x[3];
-    float stars_y[3];
-    float stars_z[3];
-    unsigned int stars_col[3];
+    float x[3];
+    float y[3];
+    float z[3];
 
+    float r[3];
+    float g[3];
+    float b[3];
 } Game_State;
 
 void initialize_game(Game_State *game);

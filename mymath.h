@@ -17,4 +17,11 @@ static inline int int_signum(int a) {
     return (a > 0) - (a < 0);
 }
 
+static inline void clampf(float *x, float min, float max) {
+    if(*x < min)
+        *x = min;
+    if(*x > max)
+        *x = max;
+}
+
 #endif

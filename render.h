@@ -6,7 +6,6 @@
 typedef struct Render_Buffer {
     int width;
     int height;
-
     int *pixels;
 } Render_Buffer;
 

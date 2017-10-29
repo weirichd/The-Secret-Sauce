@@ -1,31 +1,34 @@
 #include <stdlib.h>
-#include <time.h>
+#include <math.h>
 
 #include "game.h"
 
+float t = 0.0f;
+
 void update(Game_State *game) {
+    t += 0.007f;
 
-    for(int i = 0; i < STAR_LEN; i++) {
-        game->stars_z[i] -= 0.1;
+    game->stars_x[0] = cos(t + 2);
+    game->stars_z[0] = sin(t + 2) + 5.0f;
 
-        if(game->stars_z[i] < 0.0f) {
-            game->stars_x[i] = (float)rand()/(float)(RAND_MAX) * 20.0f - 10.0f;
-            game->stars_y[i] = (float)rand()/(float)(RAND_MAX) * 20.0f - 10.0f;
-            game->stars_z[i] = 25.00;
-        }
-    }
+    game->stars_x[1] = cos(t + 4);
+    game->stars_z[1] = sin(t + 4) + 5.0f;
+
+    game->stars_x[2] = cos(t);
+    game->stars_z[2] = sin(t) + 5.0f;
 }
 
 void initialize_game(Game_State *game) {
 
-    int seed = time(NULL);
-    srand(seed);
+    game->stars_x[0] = 0.0f;
+    game->stars_y[0] = 1.0f;
+    game->stars_z[0] = 3.0f;
 
-    // Set each x and y to between -10 and 10, set z to between 0 and 25
-    for(int i = 0; i < STAR_LEN; i++) {
-        game->stars_x[i] = (float)rand()/(float)(RAND_MAX) * 20.0f - 10.0f;
-        game->stars_y[i] = (float)rand()/(float)(RAND_MAX) * 20.0f - 10.0f;
-        game->stars_z[i] = (float)rand()/(float)(RAND_MAX) * 25.0f;
-        game->stars_col[i] = rand() | 0xFF;
-    }
+    game->stars_x[1] = -1.0f;
+    game->stars_y[1] = -1.0f;
+    game->stars_z[1] = 3.0f;
+
+    game->stars_x[2] = 1.0f;
+    game->stars_y[2] = -1.0f;
+    game->stars_z[2] = 3.0f;
 }

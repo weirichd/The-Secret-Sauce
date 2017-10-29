@@ -4,7 +4,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 
 Render_Buffer *create_render_buffer(int width, int height) {
     Render_Buffer *buff = malloc(sizeof(Render_Buffer));
@@ -25,8 +24,6 @@ static inline void fill_pixel(Render_Buffer *buff, int x, int y, int color) {
         buff->pixels[x + y * buff->width] = color;
     }
 }
-
-#include <stdio.h>
 
 static inline void draw_line(Render_Buffer *buff, int x0, int y0, int x1, int y1) {
     int dx = int_abs(x1 - x0);
@@ -63,16 +60,6 @@ static inline void draw_line(Render_Buffer *buff, int x0, int y0, int x1, int y1
     }
 }
 
-static int X0 = 70;
-static int Y0 = 10;
-static int X1 = 50;
-static int Y1 = 50;
-
-static int DX0 = 1;
-static int DX1 = 1;
-static int DY0 = 1;
-static int DY1 = -1;
-
 void render(Render_Buffer *buff, Game_State *game) {
 
     // Clear the screen
@@ -81,40 +68,33 @@ void render(Render_Buffer *buff, Game_State *game) {
     int origin_x = buff->width / 2;
     int origin_y = buff->width / 2;
 
-    // Draw the stars
-    for(int i = 0; i < STAR_LEN; i++) {
+    // Transform to Clipspace
+    float z0 = -1.0f / game->stars_z[0];
+    float x0 = game->stars_x[0] * z0;
+    float y0 = game->stars_y[0] * z0;
+    float z1 = -1.0f / game->stars_z[1];
+    float x1 = game->stars_x[1] * z1;
+    float y1 = game->stars_y[1] * z1;
+    float z2 = -1.0f / game->stars_z[2];
+    float x2 = game->stars_x[2] * z2;
+    float y2 = game->stars_y[2] * z2;
 
-        // Transform to Clipspace
-        float z = -1.0f / game->stars_z[i];
+    // Transform to Screenspace
+    int screen_x0 = x0 * buff->width + origin_x;
+    int screen_y0 = y0 * buff->width + origin_y;
+    int screen_x1 = x1 * buff->width + origin_x;
+    int screen_y1 = y1 * buff->width + origin_y;
+    int screen_x2 = x2 * buff->width + origin_x;
+    int screen_y2 = y2 * buff->width + origin_y;
 
-        float x = game->stars_x[i] * z;
-        float y = game->stars_y[i] * z;
+    // Clip and draw
 
-        // Transform to Screenspace
-        int screen_x = x * buff->width + origin_x;
-        int screen_y = y * buff->width + origin_y;
+    draw_line(buff, screen_x0, screen_y0, screen_x1, screen_y1);
+    draw_line(buff, screen_x1, screen_y1, screen_x2, screen_y2);
+    draw_line(buff, screen_x2, screen_y2, screen_x0, screen_y0);
 
-        // Clip and draw
-        fill_pixel(buff, screen_x, screen_y, game->stars_col[i]);
-    }
-
-    draw_line(buff, X0, Y0, X1, Y1);
-
-    X0 += DX0;
-    X1 += DX1;
-    Y0 += DY0;
-    Y1 += DY1;
-    
-    if(X0 < 0 || X0 > buff->width)
-        DX0 = -DX0;
-
-    if(Y0 < 0 || Y0 > buff->height)
-        DY0 = -DY0;
-
-    if(X1 < 0 || X1 > buff->width)
-        DX1 = -DX1;
-
-    if(Y1 < 0 || Y1 > buff->height)
-        DY1 = -DY1;
+    fill_pixel(buff, screen_x0, screen_y0, 0xFF0000FF);
+    fill_pixel(buff, screen_x1, screen_y1, 0xFFFF0000);
+    fill_pixel(buff, screen_x2, screen_y2, 0xFF00FF00);
 }
 

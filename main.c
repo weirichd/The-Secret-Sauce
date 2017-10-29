@@ -7,8 +7,6 @@
 #include "render.h"
 #include "upscale.h"
 
-#include "mymath.h"
-
 #pragma intrinsic(__rdtsc)
 
 int main(int argc, char* argv[]) {

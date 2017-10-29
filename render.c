@@ -37,7 +37,7 @@ static inline void fill_pixel(Render_Buffer *buff, int x, int y, int color) {
     }
 }
 
-static inline void draw_line(Render_Buffer *buff, int x0, int y0, int x1, int y1, int col) {
+static inline void draw_line(Render_Buffer *buff, int x0, int y0, int x1, int y1, float r0, float g0, float b0, float r1, float g1, float b1) {
     int dx = int_abs(x1 - x0);
     int dy = int_abs(y1 - y0);
     int signx = int_signum(x1 - x0);
@@ -56,7 +56,12 @@ static inline void draw_line(Render_Buffer *buff, int x0, int y0, int x1, int y1
     int e = 2 * dy - dx;
 
     for(int i = 0; i < dx; i++) {
-        fill_pixel(buff, x, y, col);
+        float t = (float) i / (float) dx;
+        float r  = r1 * t + (1 - t) * r0;
+        float g  = g1 * t + (1 - t) * g0;
+        float b  = b1 * t + (1 - t) * b0;
+
+        fill_pixel(buff, x, y, rgb(r, g, b));
         while(e >= 0) {
             if(swapped)
                 x += signx;
@@ -99,8 +104,8 @@ void render(Render_Buffer *buff, Game_State *game) {
     int screen_x2 = x2 * buff->width + origin_x;
     int screen_y2 = y2 * buff->width + origin_y;
 
-    draw_line(buff, screen_x0, screen_y0, screen_x1, screen_y1, rgb(game->r[0], game->g[0], game->b[0]));
-    draw_line(buff, screen_x1, screen_y1, screen_x2, screen_y2, rgb(game->r[1], game->g[1], game->b[1]));
-    draw_line(buff, screen_x2, screen_y2, screen_x0, screen_y0, rgb(game->r[2], game->g[2], game->b[2]));
+    draw_line(buff, screen_x0, screen_y0, screen_x1, screen_y1, game->r[0], game->g[0], game->b[0], game->r[1], game->g[1], game->b[1]);
+    draw_line(buff, screen_x1, screen_y1, screen_x2, screen_y2, game->r[1], game->g[1], game->b[1], game->r[2], game->g[2], game->b[2]);
+    draw_line(buff, screen_x2, screen_y2, screen_x0, screen_y0, game->r[2], game->g[2], game->b[2], game->r[0], game->g[0], game->b[0]);
 }
 

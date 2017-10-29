@@ -37,14 +37,14 @@ static inline void fill_pixel(Render_Buffer *buff, int x, int y, int color) {
     }
 }
 
-static inline void draw_line(Render_Buffer *buff, int x0, int y0, int x1, int y1, float r0, float g0, float b0, float r1, float g1, float b1) {
-    int dx = int_abs(x1 - x0);
-    int dy = int_abs(y1 - y0);
-    int signx = int_signum(x1 - x0);
-    int signy = int_signum(y1 - y0);
+static inline void draw_line(Render_Buffer *buff, Vertex *v0, Vertex *v1) {
+    int dx = int_abs(v1->x - v0->x);
+    int dy = int_abs(v1->y - v0->y);
+    int signx = int_signum(v1->x - v0->x);
+    int signy = int_signum(v1->y - v0->y);
 
-    int x = x0;
-    int y = y0;
+    int x = v0->x;
+    int y = v0->y;
 
     int swapped = 0;
 
@@ -57,9 +57,9 @@ static inline void draw_line(Render_Buffer *buff, int x0, int y0, int x1, int y1
 
     for(int i = 0; i < dx; i++) {
         float t = (float) i / (float) dx;
-        float r  = r1 * t + (1 - t) * r0;
-        float g  = g1 * t + (1 - t) * g0;
-        float b  = b1 * t + (1 - t) * b0;
+        float r  = v1->r * t + (1 - t) * v0->r;
+        float g  = v1->g * t + (1 - t) * v0->g;
+        float b  = v1->b * t + (1 - t) * v0->b;
 
         fill_pixel(buff, x, y, rgb(r, g, b));
         while(e >= 0) {
@@ -77,44 +77,36 @@ static inline void draw_line(Render_Buffer *buff, int x0, int y0, int x1, int y1
     }
 }
 
+static void transform_vertex(Vertex *dest, Vertex *src, int origin_x, int origin_y) {
+   dest->z = -1.0 / src->z; 
+   dest->x = src->x * dest->z * 2 * origin_x + origin_x;
+   dest->y = src->y * dest->z * 2 * origin_y + origin_y;
+
+   dest->r = src->r;
+   dest->g = src->g;
+   dest->b = src->b;
+}
+
 void render(Render_Buffer *buff, Game_State *game) {
 
     // Clear the screen
     memset(buff->pixels, 0x22, buff->width * buff->height * sizeof(int));
 
+    Vertex temp_v[4];
+
     int origin_x = buff->width / 2;
-    int origin_y = buff->width / 2;
+    int origin_y = buff->height / 2;
 
-    // Transform to Clipspace
-    float z0 = -1.0f / game->v[0].z;
-    float x0 = game->v[0].x * z0;
-    float y0 = game->v[0].y * z0;
+    for(int i = 0; i < 4; i++) {
+        transform_vertex(temp_v + i, &game->v[i], origin_x, origin_y);
+    }
 
-    float z1 = -1.0f / game->v[1].z;
-    float x1 = game->v[1].x * z1;
-    float y1 = game->v[1].y * z1;
+    draw_line(buff, temp_v + 0, temp_v + 1);
+    draw_line(buff, temp_v + 1, temp_v + 2);
+    draw_line(buff, temp_v + 2, temp_v + 0);
 
-    float z2 = -1.0f / game->v[2].z;
-    float x2 = game->v[2].x * z2;
-    float y2 = game->v[2].y * z2;
-
-    float z3 = -1.0f / game->v[3].z;
-    float x3 = game->v[3].x * z2;
-    float y3 = game->v[3].y * z2;
-
-    // Transform to Screenspace
-    int screen_x0 = x0 * buff->width + origin_x;
-    int screen_y0 = y0 * buff->width + origin_y;
-    int screen_x1 = x1 * buff->width + origin_x;
-    int screen_y1 = y1 * buff->width + origin_y;
-    int screen_x2 = x2 * buff->width + origin_x;
-    int screen_y2 = y2 * buff->width + origin_y;
-    int screen_x3 = x3 * buff->width + origin_x;
-    int screen_y3 = y3 * buff->width + origin_y;
-
-    draw_line(buff, screen_x0, screen_y0, screen_x1, screen_y1, game->v[0].r, game->v[0].g, game->v[0].b, game->v[1].r, game->v[1].g, game->v[1].b);
-    draw_line(buff, screen_x1, screen_y1, screen_x2, screen_y2, game->v[1].r, game->v[1].g, game->v[1].b, game->v[2].r, game->v[2].g, game->v[2].b);
-    draw_line(buff, screen_x2, screen_y2, screen_x0, screen_y0, game->v[2].r, game->v[2].g, game->v[2].b, game->v[0].r, game->v[0].g, game->v[0].b);
-    draw_line(buff, screen_x2, screen_y2, screen_x3, screen_y3, game->v[2].r, game->v[2].g, game->v[2].b, game->v[3].r, game->v[3].g, game->v[3].b);
+    draw_line(buff, temp_v + 3, temp_v + 0);
+    draw_line(buff, temp_v + 1, temp_v + 3);
+    draw_line(buff, temp_v + 2, temp_v + 3);
 }
 

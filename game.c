@@ -17,8 +17,8 @@ void update(Game_State *game) {
     game->v[2].x = cos(t);
     game->v[2].z = sin(t) + 5.0f;
 
-    game->v[3].x = cos(t - 4);
-    game->v[3].z = sin(t - 4) + 5.0f;
+    game->v[3].x = cos(t - 1);
+    game->v[3].z = sin(t - 1) + 5.0f;
 }
 
 void initialize_game(Game_State *game) {

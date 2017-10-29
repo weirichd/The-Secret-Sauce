@@ -6,11 +6,15 @@
 #include "render.h"
 #include "game.h"
 
+#include "upscale.h"
+
 #pragma intrinsic(__rdtsc)
 
 int main(int argc, char* argv[]) {
-    int width = 800;
-    int height = 800;
+    int width = 200;
+    int height = 200;
+
+    int upscale_factor = 4;
 
     SDL_Init(SDL_INIT_EVERYTHING);
 
@@ -18,7 +22,7 @@ int main(int argc, char* argv[]) {
     window = SDL_CreateWindow("The Secret Sauce",
             SDL_WINDOWPOS_CENTERED,
             SDL_WINDOWPOS_CENTERED,
-            width, height,
+            width * upscale_factor, height * upscale_factor,
             SDL_WINDOW_RESIZABLE);
 
     if (window == NULL) {
@@ -29,6 +33,8 @@ int main(int argc, char* argv[]) {
     SDL_Surface *window_surface = SDL_GetWindowSurface(window);
 
     Game_State *game = malloc(sizeof(Game_State));
+
+   int *color_buffer = malloc(sizeof(int) * width * height); 
 
     initialize_game(game);
 
@@ -47,7 +53,9 @@ int main(int argc, char* argv[]) {
         }
 
         update(game);
-        render(window_surface->pixels, game, width, height);
+        render(color_buffer, game, width, height);
+
+        upscale(color_buffer, window_surface->pixels, width, height, width * upscale_factor, height * upscale_factor);
 
         SDL_UpdateWindowSurface(window);
 
@@ -62,6 +70,8 @@ int main(int argc, char* argv[]) {
     SDL_Quit();
 
     free(game);
+
+    free(color_buffer);
 
     return 0;
 }

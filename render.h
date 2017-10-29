@@ -2,7 +2,8 @@
 #define RENDER_H
 
 #include "game.h"
+#include "graphics.h"
 
-void render(int *pixels, Game_State *game, int width, int height);
+void render(Render_Buffer *rbuffer, Game_State *game);
 
 #endif

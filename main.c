@@ -3,9 +3,9 @@
 #include <x86intrin.h>
 #include <stdlib.h>
 
-#include "render.h"
 #include "game.h"
-
+#include "graphics.h"
+#include "render.h"
 #include "upscale.h"
 
 #pragma intrinsic(__rdtsc)
@@ -33,8 +33,7 @@ int main(int argc, char* argv[]) {
     SDL_Surface *window_surface = SDL_GetWindowSurface(window);
 
     Game_State *game = malloc(sizeof(Game_State));
-
-   int *color_buffer = malloc(sizeof(int) * width * height); 
+    Render_Buffer *rbuffer = create_render_buffer(width, height);
 
     initialize_game(game);
 
@@ -53,9 +52,9 @@ int main(int argc, char* argv[]) {
         }
 
         update(game);
-        render(color_buffer, game, width, height);
+        render(rbuffer, game);
 
-        upscale(color_buffer, window_surface->pixels, width, height, width * upscale_factor, height * upscale_factor);
+        upscale(rbuffer->pixels, window_surface->pixels, width, height, width * upscale_factor, height * upscale_factor);
 
         SDL_UpdateWindowSurface(window);
 
@@ -71,7 +70,7 @@ int main(int argc, char* argv[]) {
 
     free(game);
 
-    free(color_buffer);
+    free_render_buffer(rbuffer);
 
     return 0;
 }

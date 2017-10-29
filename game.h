@@ -1,15 +1,13 @@
 #ifndef GAME_H
 #define GAME_H
 
+// TODO: Don't keep this here.
+typedef struct Vertex {
+    float x, y, z, r, g, b;
+} Vertex;
+
 typedef struct Game_State {
-
-    float x[3];
-    float y[3];
-    float z[3];
-
-    float r[3];
-    float g[3];
-    float b[3];
+    Vertex v[4];
 } Game_State;
 
 void initialize_game(Game_State *game);

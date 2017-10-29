@@ -86,15 +86,21 @@ void render(Render_Buffer *buff, Game_State *game) {
     int origin_y = buff->width / 2;
 
     // Transform to Clipspace
-    float z0 = -1.0f / game->z[0];
-    float x0 = game->x[0] * z0;
-    float y0 = game->y[0] * z0;
-    float z1 = -1.0f / game->z[1];
-    float x1 = game->x[1] * z1;
-    float y1 = game->y[1] * z1;
-    float z2 = -1.0f / game->z[2];
-    float x2 = game->x[2] * z2;
-    float y2 = game->y[2] * z2;
+    float z0 = -1.0f / game->v[0].z;
+    float x0 = game->v[0].x * z0;
+    float y0 = game->v[0].y * z0;
+
+    float z1 = -1.0f / game->v[1].z;
+    float x1 = game->v[1].x * z1;
+    float y1 = game->v[1].y * z1;
+
+    float z2 = -1.0f / game->v[2].z;
+    float x2 = game->v[2].x * z2;
+    float y2 = game->v[2].y * z2;
+
+    float z3 = -1.0f / game->v[3].z;
+    float x3 = game->v[3].x * z2;
+    float y3 = game->v[3].y * z2;
 
     // Transform to Screenspace
     int screen_x0 = x0 * buff->width + origin_x;
@@ -103,9 +109,12 @@ void render(Render_Buffer *buff, Game_State *game) {
     int screen_y1 = y1 * buff->width + origin_y;
     int screen_x2 = x2 * buff->width + origin_x;
     int screen_y2 = y2 * buff->width + origin_y;
+    int screen_x3 = x3 * buff->width + origin_x;
+    int screen_y3 = y3 * buff->width + origin_y;
 
-    draw_line(buff, screen_x0, screen_y0, screen_x1, screen_y1, game->r[0], game->g[0], game->b[0], game->r[1], game->g[1], game->b[1]);
-    draw_line(buff, screen_x1, screen_y1, screen_x2, screen_y2, game->r[1], game->g[1], game->b[1], game->r[2], game->g[2], game->b[2]);
-    draw_line(buff, screen_x2, screen_y2, screen_x0, screen_y0, game->r[2], game->g[2], game->b[2], game->r[0], game->g[0], game->b[0]);
+    draw_line(buff, screen_x0, screen_y0, screen_x1, screen_y1, game->v[0].r, game->v[0].g, game->v[0].b, game->v[1].r, game->v[1].g, game->v[1].b);
+    draw_line(buff, screen_x1, screen_y1, screen_x2, screen_y2, game->v[1].r, game->v[1].g, game->v[1].b, game->v[2].r, game->v[2].g, game->v[2].b);
+    draw_line(buff, screen_x2, screen_y2, screen_x0, screen_y0, game->v[2].r, game->v[2].g, game->v[2].b, game->v[0].r, game->v[0].g, game->v[0].b);
+    draw_line(buff, screen_x2, screen_y2, screen_x3, screen_y3, game->v[2].r, game->v[2].g, game->v[2].b, game->v[3].r, game->v[3].g, game->v[3].b);
 }
 

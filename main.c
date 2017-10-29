@@ -11,10 +11,10 @@
 
 int main(int argc, char* argv[]) {
 
-    int width = 100;
-    int height = 100;
+    int width = 400;
+    int height = 400;
 
-    int upscale_factor = 7;
+    int upscale_factor = 2;
 
     SDL_Init(SDL_INIT_EVERYTHING);
 

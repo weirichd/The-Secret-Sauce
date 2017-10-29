@@ -4,7 +4,6 @@
 #include <stdlib.h>
 
 #include "game.h"
-#include "graphics.h"
 #include "render.h"
 #include "upscale.h"
 

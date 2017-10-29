@@ -9,6 +9,8 @@ void update(Game_State *game) {
         game->stars_z[i] -= 0.1;
 
         if(game->stars_z[i] < 0.0f) {
+            game->stars_x[i] = (float)rand()/(float)(RAND_MAX) * 20.0f - 10.0f;
+            game->stars_y[i] = (float)rand()/(float)(RAND_MAX) * 20.0f - 10.0f;
             game->stars_z[i] = 25.00;
         }
     }

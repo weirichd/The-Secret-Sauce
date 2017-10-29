@@ -3,6 +3,32 @@
 
 unsigned char i = 0;
 
+static inline void draw_pixel(int *pixels, int width, int x, int y, int color) {
+    pixels[x + y * width] = color;
+}
+
+static inline void draw_line(int *pixels, int width, int x0, int y0, int x1, int y1) {
+    int dx = x1 - x0;
+    int dy = y1 - y0;
+
+    int x = x0;
+    int y = y0;
+
+    int p = 2 * dy - dx;
+
+    while(x < x1) {
+        draw_pixel(pixels, width, x, y, 0xFFFFFFFF);
+        p += 2 * dy;
+
+        if(p >= 0) {
+            y++;
+            p -= 2 * dx;
+        }
+
+        x++;
+    }
+}
+
 void render(int *pixels, Game_State *game, int width, int height) {
 
     // Clear the screen
@@ -26,8 +52,17 @@ void render(int *pixels, Game_State *game, int width, int height) {
 
         // Clip and draw
         if(0 <= screen_x && width >= screen_x && 0 <= screen_y && height >= screen_y) {
-            pixels[width * screen_y + screen_x] = game->stars_col[i];
+            draw_pixel(pixels, width, screen_x, screen_y, game->stars_col[i]);
         }
     }
+
+    // Line stuff
+    int x0 = 30;
+    int y0 = 40;
+
+    int x1 = 90;
+    int y1 = 66;
+
+    draw_line(pixels, width, x0, y0, x1, y1);
 }
 

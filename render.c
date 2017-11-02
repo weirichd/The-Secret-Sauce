@@ -14,10 +14,12 @@ Render_Buffer *create_render_buffer(int width, int height) {
     return buff;
 }
 
+
 void free_render_buffer(Render_Buffer *buff) {
     free(buff->pixels);
     free(buff);
 }
+
 
 static inline int rgb(float r, float g, float b) {
     clampf(&r, 0.0f, 1.0f);
@@ -31,9 +33,43 @@ static inline int rgb(float r, float g, float b) {
     return 0xFF000000 + (R << 16) + (G << 8) + B;
 }
 
+
 static inline void fill_pixel(Render_Buffer *buff, int x, int y, int color) {
     if(0 <= x && buff->width >= x && 0 <= y && buff->height >= y) {
         buff->pixels[x + y * buff->width] = color;
+    }
+}
+
+
+void triangle(Render_Buffer *buff, const Vertex2Di *v1, const Vertex2Di *v2, const Vertex2Di *v3)
+{
+    float y1 = v1->y;
+    float y2 = v2->y;
+    float y3 = v3->y;
+
+    float x1 = v1->x;
+    float x2 = v2->x;
+    float x3 = v3->x;
+
+    // Bounding rectangle
+    int minx = int_min3(x1, x2, x3);
+    int maxx = int_max3(x1, x2, x3);
+    int miny = int_min3(y1, y2, y3);
+    int maxy = int_max3(y1, y2, y3);
+
+    // Scan through bounding rectangle
+    for(int y = miny; y < maxy; y++)
+    {
+        for(int x = minx; x < maxx; x++)
+        {
+            // When all half-space functions positive, pixel is in triangle
+            if((x1 - x2) * (y - y1) - (y1 - y2) * (x - x1) > 0 &&
+               (x2 - x3) * (y - y2) - (y2 - y3) * (x - x2) > 0 &&
+               (x3 - x1) * (y - y3) - (y3 - y1) * (x - x3) > 0)
+            {
+                fill_pixel(buff, x, y, 0xFFFFFFFF);
+            }
+        }
     }
 }
 
@@ -75,12 +111,11 @@ static inline void draw_line(Render_Buffer *buff, Vertex2Di *v0, Vertex2Di *v1) 
             x += signx;
         e += 2 * dy;
     }
-
-    fill_pixel(buff, v1->x, v1->y, rgb(v1->r, v1->g, v1->b));
 }
 
+
 static void transform_vertex(Vertex *dest, Vertex *src, int origin_x, int origin_y) {
-   dest->z = -1.0 / src->z; 
+   dest->z = -1.0 / src->z;
    dest->x = src->x * dest->z * 2 * origin_x + origin_x;
    dest->y = src->y * dest->z * 2 * origin_y + origin_y;
 
@@ -89,19 +124,20 @@ static void transform_vertex(Vertex *dest, Vertex *src, int origin_x, int origin
    dest->b = src->b;
 }
 
+
 static void clip_space_to_screen(Vertex *clip_verts, Vertex2Di *screen_verts, size_t count, int origin_x, int origin_y) {
     for(int i = 0; i < count; i++) {
         // TODO: Perspective divide in another step
-        float z = -1.0 / clip_verts[i].z; 
-        // TODO: Round???
-        screen_verts[i].x = (int)(clip_verts[i].x * z * 2 * origin_x + origin_x);
-        screen_verts[i].y = (int)(clip_verts[i].y * z * 2 * origin_y + origin_y);
+        float z = -1.0 / clip_verts[i].z;
+        screen_verts[i].x = (int)(clip_verts[i].x * z * 2 * origin_x + origin_x + 0.5f);
+        screen_verts[i].y = (int)(clip_verts[i].y * z * 2 * origin_y + origin_y + 0.5f);
 
         screen_verts[i].r = clip_verts[i].r;
         screen_verts[i].g = clip_verts[i].g;
         screen_verts[i].b = clip_verts[i].b;
     }
 }
+
 
 void render(Render_Buffer *buff, Game_State *game) {
 
@@ -118,5 +154,7 @@ void render(Render_Buffer *buff, Game_State *game) {
     draw_line(buff, temp_v + 0, temp_v + 1);
     draw_line(buff, temp_v + 1, temp_v + 2);
     draw_line(buff, temp_v + 2, temp_v + 0);
+
+    triangle(buff, temp_v, temp_v + 1, temp_v + 2);
 }
 

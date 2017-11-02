@@ -8,7 +8,7 @@ typedef struct Vertex {
 
 typedef struct Vertex2Di {
     int x, y;
-    unsigned char r, g, b;
+    float r, g, b;
 } Vertex2Di;
 
 typedef struct Game_State {

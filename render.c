@@ -37,7 +37,7 @@ static inline void fill_pixel(Render_Buffer *buff, int x, int y, int color) {
     }
 }
 
-static inline void draw_line(Render_Buffer *buff, Vertex *v0, Vertex *v1) {
+static inline void draw_line(Render_Buffer *buff, Vertex2Di *v0, Vertex2Di *v1) {
     int dx = int_abs(v1->x - v0->x);
     int dy = int_abs(v1->y - v0->y);
     int signx = int_signum(v1->x - v0->x);
@@ -89,19 +89,31 @@ static void transform_vertex(Vertex *dest, Vertex *src, int origin_x, int origin
    dest->b = src->b;
 }
 
+static void clip_space_to_screen(Vertex *clip_verts, Vertex2Di *screen_verts, size_t count, int origin_x, int origin_y) {
+    for(int i = 0; i < count; i++) {
+        // TODO: Perspective divide in another step
+        float z = -1.0 / clip_verts[i].z; 
+        // TODO: Round???
+        screen_verts[i].x = (int)(clip_verts[i].x * z * 2 * origin_x + origin_x);
+        screen_verts[i].y = (int)(clip_verts[i].y * z * 2 * origin_y + origin_y);
+
+        screen_verts[i].r = clip_verts[i].r;
+        screen_verts[i].g = clip_verts[i].g;
+        screen_verts[i].b = clip_verts[i].b;
+    }
+}
+
 void render(Render_Buffer *buff, Game_State *game) {
 
     // Clear the screen
     memset(buff->pixels, 0x22, buff->width * buff->height * sizeof(int));
 
-    Vertex temp_v[3];
+    Vertex2Di temp_v[3];
 
     int origin_x = buff->width / 2;
     int origin_y = buff->height / 2;
 
-    for(int i = 0; i < 3; i++) {
-        transform_vertex(temp_v + i, &game->v[i], origin_x, origin_y);
-    }
+    clip_space_to_screen(game->v, temp_v, 3, origin_x, origin_y);
 
     draw_line(buff, temp_v + 0, temp_v + 1);
     draw_line(buff, temp_v + 1, temp_v + 2);

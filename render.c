@@ -75,6 +75,8 @@ static inline void draw_line(Render_Buffer *buff, Vertex *v0, Vertex *v1) {
             x += signx;
         e += 2 * dy;
     }
+
+    fill_pixel(buff, v1->x, v1->y, rgb(v1->r, v1->g, v1->b));
 }
 
 static void transform_vertex(Vertex *dest, Vertex *src, int origin_x, int origin_y) {
@@ -92,21 +94,17 @@ void render(Render_Buffer *buff, Game_State *game) {
     // Clear the screen
     memset(buff->pixels, 0x22, buff->width * buff->height * sizeof(int));
 
-    Vertex temp_v[4];
+    Vertex temp_v[3];
 
     int origin_x = buff->width / 2;
     int origin_y = buff->height / 2;
 
-    for(int i = 0; i < 4; i++) {
+    for(int i = 0; i < 3; i++) {
         transform_vertex(temp_v + i, &game->v[i], origin_x, origin_y);
     }
 
     draw_line(buff, temp_v + 0, temp_v + 1);
     draw_line(buff, temp_v + 1, temp_v + 2);
     draw_line(buff, temp_v + 2, temp_v + 0);
-
-    draw_line(buff, temp_v + 3, temp_v + 0);
-    draw_line(buff, temp_v + 1, temp_v + 3);
-    draw_line(buff, temp_v + 2, temp_v + 3);
 }
 

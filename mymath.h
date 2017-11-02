@@ -2,7 +2,7 @@
 #define MYMATH_H
 
 static inline int int_abs(int a) {
-    if( a >= 0)
+    if(a >= 0)
         return a;
     return -a;
 }

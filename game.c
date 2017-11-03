@@ -8,7 +8,7 @@ float t = 0.0f;
 float p = 3.14159f;
 
 void update(Game_State *game) {
-    t += 0.007f;
+    t += 0.017f;
 
     game->v[0].x = 0;
     game->v[0].z = 5.0f;

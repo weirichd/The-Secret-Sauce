@@ -182,8 +182,5 @@ void render(Render_Buffer *buff, Game_State *game) {
 
     triangle(buff, temp_v);
 
-    copy_number_into_buffer(buff->pixels, num, 4, 4, buff->width);
-
-    num++;
+    copy_number_into_buffer(buff->pixels, game->fps, 4, 4, buff->width);
 }
-

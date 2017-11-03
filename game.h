@@ -13,6 +13,7 @@ typedef struct Vertex2Di {
 
 typedef struct Game_State {
     Vertex v[3];
+    int fps;
 } Game_State;
 
 void initialize_game(Game_State *game);

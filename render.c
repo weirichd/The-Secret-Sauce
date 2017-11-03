@@ -41,15 +41,31 @@ static inline void fill_pixel(Render_Buffer *buff, int x, int y, int color) {
 }
 
 
-void triangle(Render_Buffer *buff, const Vertex2Di *v1, const Vertex2Di *v2, const Vertex2Di *v3)
+static void triangle(Render_Buffer *buff, const Vertex2Di v[3])
 {
-    float y1 = v1->y;
-    float y2 = v2->y;
-    float y3 = v3->y;
+    int top = 0;
+    int middle = 1;
+    int bottom = 2;
 
-    float x1 = v1->x;
-    float x2 = v2->x;
-    float x3 = v3->x;
+    // Janky as hell conditional sort
+    if(v[0].y >= v[1].y && v[1].y >= v[2].y)  { top = 2; middle = 1; bottom = 0; }
+    if(v[0].y >= v[2].y && v[2].y >= v[1].y)  { top = 1; middle = 2; bottom = 0; }
+    if(v[1].y >= v[0].y && v[0].y >= v[2].y)  { top = 2; middle = 0; bottom = 1; }
+    if(v[1].y >= v[2].y && v[2].y >= v[0].y)  { top = 0; middle = 2; bottom = 1; }
+    if(v[2].y >= v[0].y && v[0].y >= v[1].y)  { top = 1; middle = 0; bottom = 2; }
+
+    // Swap the bottom two if necessary
+    if(v[middle].x >= v[bottom].x) {
+        swap_int(&middle, &bottom);
+    }
+
+    int x1 = v[top].x;
+    int x2 = v[middle].x;
+    int x3 = v[bottom].x;
+
+    int y1 = v[top].y;
+    int y2 = v[middle].y;
+    int y3 = v[bottom].y;
 
     // Bounding rectangle
     int minx = int_min3(x1, x2, x3);
@@ -67,10 +83,14 @@ void triangle(Render_Buffer *buff, const Vertex2Di *v1, const Vertex2Di *v2, con
                (x2 - x3) * (y - y2) - (y2 - y3) * (x - x2) > 0 &&
                (x3 - x1) * (y - y3) - (y3 - y1) * (x - x3) > 0)
             {
-                fill_pixel(buff, x, y, 0xFFFFFFFF);
+                fill_pixel(buff, x, y, 0x99999999);
             }
         }
     }
+
+    fill_pixel(buff, x1, y1, 0xFFFF0000);
+    fill_pixel(buff, x2, y2, 0xFF00FF00);
+    fill_pixel(buff, x3, y3, 0xFF0000FF);
 }
 
 static inline void draw_line(Render_Buffer *buff, Vertex2Di *v0, Vertex2Di *v1) {
@@ -151,10 +171,12 @@ void render(Render_Buffer *buff, Game_State *game) {
 
     clip_space_to_screen(game->v, temp_v, 3, origin_x, origin_y);
 
+    /*
     draw_line(buff, temp_v + 0, temp_v + 1);
     draw_line(buff, temp_v + 1, temp_v + 2);
     draw_line(buff, temp_v + 2, temp_v + 0);
+    */
 
-    triangle(buff, temp_v, temp_v + 1, temp_v + 2);
+    triangle(buff, temp_v);
 }
 

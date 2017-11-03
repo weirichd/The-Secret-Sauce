@@ -1,6 +1,7 @@
 #include "render.h"
 
 #include "mymath.h"
+#include "numbers.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -159,6 +160,8 @@ static void clip_space_to_screen(Vertex *clip_verts, Vertex2Di *screen_verts, si
 }
 
 
+static int num = 0;
+
 void render(Render_Buffer *buff, Game_State *game) {
 
     // Clear the screen
@@ -178,5 +181,9 @@ void render(Render_Buffer *buff, Game_State *game) {
     */
 
     triangle(buff, temp_v);
+
+    copy_number_into_buffer(buff->pixels, num, 4, 4, buff->width);
+
+    num++;
 }
 

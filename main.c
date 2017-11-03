@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
 
         unsigned long long this_cycle = __rdtsc();
         unsigned int delta_cycles = this_cycle - last_cycle;
-        printf("%u\n", delta_cycles);
+        //printf("%u\n", delta_cycles);
         last_cycle = this_cycle;
     }
 

@@ -7,4 +7,4 @@ game: main.o render.o game.o upscale.o numbers.o
 render.o: font.h
 
 clean:
-	rm *.o
+	rm *.o game

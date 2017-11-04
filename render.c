@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 Render_Buffer *create_render_buffer(int width, int height) {
     Render_Buffer *buff = malloc(sizeof(Render_Buffer));
@@ -183,9 +184,9 @@ void render(Render_Buffer *buff, Game_State *game) {
 
     triangle(buff, temp_v);
 
-    for(unsigned char i = 0; i < 128; i++) {
-        int cx = i % 32;
-        int cy = i / 32; 
-        render_character(i, buff->pixels, 1 + cx*4, 1 + cy*6, buff->width);
-    }
+    char s[100] = {};
+
+    sprintf(s, "Current FPS: %d", game->fps);
+
+    render_string(s, buff->pixels, 1, 1, buff->width);
 }

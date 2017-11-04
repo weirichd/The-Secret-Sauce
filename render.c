@@ -1,5 +1,6 @@
 #include "render.h"
 
+#include "font.h"
 #include "mymath.h"
 #include "numbers.h"
 
@@ -182,5 +183,9 @@ void render(Render_Buffer *buff, Game_State *game) {
 
     triangle(buff, temp_v);
 
-    copy_number_into_buffer(buff->pixels, game->fps, 4, 4, buff->width);
+    for(unsigned char i = 0; i < 128; i++) {
+        int cx = i % 32;
+        int cy = i / 32; 
+        render_character(i, buff->pixels, 1 + cx*4, 1 + cy*6, buff->width);
+    }
 }

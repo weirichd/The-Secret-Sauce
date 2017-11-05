@@ -1,6 +1,7 @@
 #include "render.h"
 
 #include "font.h"
+#include "matrix.h"
 #include "mymath.h"
 #include "numbers.h"
 
@@ -161,8 +162,6 @@ static void clip_space_to_screen(Vertex *clip_verts, Vertex2Di *screen_verts, si
     }
 }
 
-
-static int num = 0;
 
 void render(Render_Buffer *buff, Game_State *game) {
 

@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "game.h"
+#include "matrix.h"
 
-float t = 0.0f;
+#include "game.h"
 
 float p = 3.14159f;
 

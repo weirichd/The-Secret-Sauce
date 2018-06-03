@@ -25,6 +25,7 @@ int main(int argc, char* argv[]) {
             width * upscale_factor, height * upscale_factor,
             SDL_WINDOW_RESIZABLE);
 
+
     if (window == NULL) {
         printf("Could not create window: %s\n", SDL_GetError());
         return 1;

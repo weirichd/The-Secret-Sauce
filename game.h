@@ -1,18 +1,10 @@
 #ifndef GAME_H
 #define GAME_H
 
-// TODO: Don't keep this here.
-typedef struct Vertex {
-    float x, y, z, r, g, b;
-} Vertex;
-
-typedef struct Vertex2Di {
-    int x, y;
-    float r, g, b;
-} Vertex2Di;
+#include "matrix.h"
 
 typedef struct Game_State {
-    Vertex v[3];
+    Vector3f v[3];
     int fps;
 } Game_State;
 

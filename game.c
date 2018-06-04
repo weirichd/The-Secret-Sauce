@@ -7,21 +7,19 @@
 
 float p = 3.14159f;
 
-float t = 0.0f;
+float dt = 0.003f;
 
 void update(Game_State *game) {
-     t += 0.017f;
 
-    game->v[0].x = 0;
-    game->v[0].z = 5.0f;
+    Matrix3x3f mat = {
+        cos(dt), -sin(dt), 0.0,
+        sin(dt),  cos(dt), 0.0,
+        0.0,          0.0, 1.0,
+    };
 
-    game->v[1].x = cos(t + p);
-    game->v[1].z = sin(t + p) + 5.0f;
-
-    game->v[2].x = cos(t);
-    game->v[2].z = sin(t) + 5.0f;
-
-    if(t > 2 * p) t -= 2 * p;
+    matrix_vector_mul3f(&game->v[0], &mat, &game->v[0]);
+    matrix_vector_mul3f(&game->v[1], &mat, &game->v[1]);
+    matrix_vector_mul3f(&game->v[2], &mat, &game->v[2]);
 }
 
 void initialize_game(Game_State *game) {

@@ -3,7 +3,6 @@
 #include "font.h"
 #include "matrix.h"
 #include "mymath.h"
-#include "numbers.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -154,12 +153,12 @@ void render(Render_Buffer *buff, Game_State *game) {
     // Clear the screen
     memset(buff->pixels, 0x22, buff->width * buff->height * sizeof(int));
 
-    Vector3f temp_v[3] = {45, 32, 0, 55, 22, 0, 86, 70, 0};
+    Vector3f temp_v[3];
 
     int origin_x = buff->width / 2;
     int origin_y = buff->height / 2;
 
-    // clip_space_to_screen(game->v, temp_v, 3, origin_x, origin_y);
+    clip_space_to_screen(game->v, temp_v, 3, origin_x, origin_y);
 
     triangle(buff, temp_v);
 

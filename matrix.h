@@ -32,7 +32,7 @@ static void affine_transform3f(Vector3f *result, Matrix3x3f *A, Vector3f *b, Vec
 } 
 
 static void perspective_projection(Vector3f *dest, Vector3f *src) {
-   dest->z = -1.0 / src->z;
+   dest->z = -1.0f / src->z;
    dest->x = src->x * dest->z;
    dest->y = src->y * dest->z;
 }

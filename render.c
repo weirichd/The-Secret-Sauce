@@ -43,8 +43,12 @@ static inline void fill_pixel(Render_Buffer *buff, int x, int y, int color) {
     }
 }
 
+// NOTE: This is vulnerable to integer overflow if the screen coordinates are larger than 2^15
+int half_space(int x0, int y0, int x1, int y1, int x2, int y2) {
+    return (x1 - x2) * (y0 - y1) - (y1 - y2) * (x0 - x1);
+}
 
-static void triangle(Render_Buffer *buff, const Vector3f v[3])
+static void triangle(Render_Buffer *buff, const Vector3f v[3], const Vector3f colors[3])
 {
     int top = 0;
     int middle = 1;
@@ -81,62 +85,26 @@ static void triangle(Render_Buffer *buff, const Vector3f v[3])
     {
         for(int x = minx; x < maxx; x++)
         {
+            int w0 = half_space(x, y, x1, y1, x2, y2);
+            int w1 = half_space(x, y, x2, y2, x3, y3);
+            int w2 = half_space(x, y, x3, y3, x1, y1);
             // When all half-space functions positive, pixel is in triangle
-            if((x1 - x2) * (y - y1) - (y1 - y2) * (x - x1) > 0 &&
-               (x2 - x3) * (y - y2) - (y2 - y3) * (x - x2) > 0 &&
-               (x3 - x1) * (y - y3) - (y3 - y1) * (x - x3) > 0)
-            {
-                fill_pixel(buff, x, y, 0x99999999);
+            if(w0 >= 0 && w1 >= 0 && w2 >= 0) {
+                float denom = w0 + w1 + w2;
+
+                float bary0 = w0 / denom;                  
+                float bary1 = w1 / denom;                  
+                float bary2 = w2 / denom;                  
+
+                float red    = bary0 * colors[top].x + bary1 * colors[middle].x + bary2 * colors[bottom].x;
+                float blue   = bary0 * colors[top].y + bary1 * colors[middle].y + bary2 * colors[bottom].y;
+                float green  = bary0 * colors[top].z + bary1 * colors[middle].z + bary2 * colors[bottom].z;
+
+                fill_pixel(buff, x, y, rgb(red, blue, green));
             }
         }
     }
-
-    fill_pixel(buff, x1, y1, 0xFFFF0000);
-    fill_pixel(buff, x2, y2, 0xFF00FF00);
-    fill_pixel(buff, x3, y3, 0xFF0000FF);
 }
-
-/*
-static inline void draw_line(Render_Buffer *buff, Vertex2Di *v0, Vertex2Di *v1) {
-    int dx = int_abs(v1->x - v0->x);
-    int dy = int_abs(v1->y - v0->y);
-    int signx = int_signum(v1->x - v0->x);
-    int signy = int_signum(v1->y - v0->y);
-
-    int x = v0->x;
-    int y = v0->y;
-
-    int swapped = 0;
-
-    if(dy > dx) {
-        swap_int(&dx, &dy);
-        swapped = 1;
-    }
-
-    int e = 2 * dy - dx;
-
-    for(int i = 0; i < dx; i++) {
-        float t = (float) i / (float) dx;
-        float r  = v1->r * t + (1 - t) * v0->r;
-        float g  = v1->g * t + (1 - t) * v0->g;
-        float b  = v1->b * t + (1 - t) * v0->b;
-
-        fill_pixel(buff, x, y, rgb(r, g, b));
-        while(e >= 0) {
-            if(swapped)
-                x += signx;
-            else
-                y += signy;
-            e -= 2 * dx;
-        }
-        if(swapped)
-            y += signy;
-        else
-            x += signx;
-        e += 2 * dy;
-    }
-}
-*/
 
 static void clip_space_to_screen(Vector3f *clip_verts, Vector3f *screen_verts, size_t count, int origin_x, int origin_y) {
     for(int i = 0; i < count; i++) {
@@ -146,7 +114,6 @@ static void clip_space_to_screen(Vector3f *clip_verts, Vector3f *screen_verts, s
         screen_verts[i].y = (int)(clip_verts[i].y * z * 2 * origin_y + origin_y + 0.5f);
     }
 }
-
 
 void render(Render_Buffer *buff, Game_State *game) {
 
@@ -160,7 +127,7 @@ void render(Render_Buffer *buff, Game_State *game) {
 
     clip_space_to_screen(game->v, temp_v, 3, origin_x, origin_y);
 
-    triangle(buff, temp_v);
+    triangle(buff, temp_v, game->c);
 
     char s[100] = {};
 

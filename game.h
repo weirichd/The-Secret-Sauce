@@ -5,6 +5,7 @@
 
 typedef struct Game_State {
     Vector3f v[3];
+    Vector3f c[3];
     int fps;
 } Game_State;
 

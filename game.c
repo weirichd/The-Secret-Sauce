@@ -14,12 +14,6 @@ void update(Game_State *game) {
     float c = cos(dt);
     float s = sin(dt);
 
-    Matrix3x3f mat1 = {
-        c, 0, -s,
-        0, 1, 0,
-        s, 0, c
-    };
-
     Matrix3x3f mat2 = {
         c, -s,0,
         s, c, 0,
@@ -29,6 +23,12 @@ void update(Game_State *game) {
     matrix_vector_mul3f(&game->v[0], &mat2, &game->v[0]);
     matrix_vector_mul3f(&game->v[1], &mat2, &game->v[1]);
     matrix_vector_mul3f(&game->v[2], &mat2, &game->v[2]);
+
+    // Update the camera based on controller inputs
+    if(game->controller.up)
+        game->camera_pos.z -= 0.01f;
+    if(game->controller.down)
+        game->camera_pos.z += 0.01f;
 }
 
 void initialize_game(Game_State *game) {
@@ -64,4 +64,7 @@ void initialize_game(Game_State *game) {
     game->camera_pos.x = 0.0f;
     game->camera_pos.y = 0.0f;
     game->camera_pos.z = 5.0f;
+
+    // Controller starts w/ all buttons not pressed
+    memset(&game->controller, 0, sizeof(Controller));
 }

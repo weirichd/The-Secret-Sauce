@@ -52,6 +52,8 @@ int main(int argc, char* argv[]) {
                 break;
         }
 
+        game->controller.down = 1;
+
         update(game);
         render(rbuffer, game);
 

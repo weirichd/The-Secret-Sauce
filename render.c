@@ -81,10 +81,8 @@ static void triangle(Render_Buffer *buff, const Vector3f v[3], const Vector3f co
     int maxy = int_max3(y1, y2, y3);
 
     // Scan through bounding rectangle
-    for(int y = miny; y <= maxy; y++)
-    {
-        for(int x = minx; x <= maxx; x++)
-        {
+    for(int y = miny; y <= maxy; y++) {
+        for(int x = minx; x <= maxx; x++) {
             int w0 = half_space(x, y, x1, y1, x2, y2);
             int w1 = half_space(x, y, x2, y2, x3, y3);
             int w2 = half_space(x, y, x3, y3, x1, y1);
@@ -102,32 +100,36 @@ static void triangle(Render_Buffer *buff, const Vector3f v[3], const Vector3f co
 
                 fill_pixel(buff, x, y, rgb(red, blue, green));
             }
+            // Draw bounding box
+            if(x == minx || x == maxx || y == miny || y == maxy) {
+                fill_pixel(buff, x, y, 0xEEEEEEEE);
+            }
         }
     }
 }
 
-static void clip_space_to_screen(Vector3f *clip_verts, Vector3f *screen_verts, size_t count, int origin_x, int origin_y) {
+static void clip_space_to_screen(Vector3f *screen_verts, const Vector3f *const clip_verts, size_t count, int origin_x, int origin_y) {
     for(int i = 0; i < count; i++) {
-
-        float CAMERA_Z = 5;
-
-        float z = -1.0 / (clip_verts[i].z + CAMERA_Z);
+        float z = -1.0 / clip_verts[i].z;
         screen_verts[i].x = (int)(clip_verts[i].x * z * 2 * origin_x + origin_x + 0.5f);
         screen_verts[i].y = (int)(clip_verts[i].y * z * 2 * origin_y + origin_y + 0.5f);
     }
 }
 
-void render(Render_Buffer *buff, Game_State *game) {
-
+void render(Render_Buffer *buff, const Game_State *const game) {
     // Clear the screen
     memset(buff->pixels, 0x22, buff->width * buff->height * sizeof(int));
 
     Vector3f temp_v[3];
 
+    memcpy(temp_v, game->v, sizeof(Vector3f) * 3);     
+
+    transform_vectors(temp_v, 3, &game->camera_rot, &game->camera_pos);
+
     int origin_x = buff->width / 2;
     int origin_y = buff->height / 2;
 
-    clip_space_to_screen(game->v, temp_v, 3, origin_x, origin_y);
+    clip_space_to_screen(temp_v, temp_v, 3, origin_x, origin_y);
 
     triangle(buff, temp_v, game->c);
 

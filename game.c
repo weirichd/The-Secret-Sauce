@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <math.h>
 
 #include "matrix.h"
@@ -19,9 +20,15 @@ void update(Game_State *game) {
         s, 0, c
     };
 
-    matrix_vector_mul3f(&game->v[0], &mat1, &game->v[0]);
-    matrix_vector_mul3f(&game->v[1], &mat1, &game->v[1]);
-    matrix_vector_mul3f(&game->v[2], &mat1, &game->v[2]);
+    Matrix3x3f mat2 = {
+        c, -s,0,
+        s, c, 0,
+        0, 0, 1,
+    };
+
+    matrix_vector_mul3f(&game->v[0], &mat2, &game->v[0]);
+    matrix_vector_mul3f(&game->v[1], &mat2, &game->v[1]);
+    matrix_vector_mul3f(&game->v[2], &mat2, &game->v[2]);
 }
 
 void initialize_game(Game_State *game) {
@@ -51,4 +58,10 @@ void initialize_game(Game_State *game) {
     game->c[2].y = 0.0f;
     game->c[2].z = 1.0f;
 
+
+    // Camera position and rotation
+    load_identity_matrix(&game->camera_rot);
+    game->camera_pos.x = 0.0f;
+    game->camera_pos.y = 0.0f;
+    game->camera_pos.z = 5.0f;
 }

@@ -13,6 +13,6 @@ Render_Buffer *create_render_buffer(int width, int height);
 
 void free_render_buffer(Render_Buffer *buff);
 
-void render(Render_Buffer *rbuffer, Game_State *game);
+void render(Render_Buffer *rbuffer, const Game_State *const game);
 
 #endif

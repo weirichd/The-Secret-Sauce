@@ -6,6 +6,10 @@
 typedef struct Game_State {
     Vector3f v[3];
     Vector3f c[3];
+
+    Matrix3x3f camera_rot;
+    Vector3f camera_pos;
+
     int fps;
 } Game_State;
 

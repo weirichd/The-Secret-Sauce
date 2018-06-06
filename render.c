@@ -81,9 +81,9 @@ static void triangle(Render_Buffer *buff, const Vector3f v[3], const Vector3f co
     int maxy = int_max3(y1, y2, y3);
 
     // Scan through bounding rectangle
-    for(int y = miny; y < maxy; y++)
+    for(int y = miny; y <= maxy; y++)
     {
-        for(int x = minx; x < maxx; x++)
+        for(int x = minx; x <= maxx; x++)
         {
             int w0 = half_space(x, y, x1, y1, x2, y2);
             int w1 = half_space(x, y, x2, y2, x3, y3);
@@ -108,8 +108,10 @@ static void triangle(Render_Buffer *buff, const Vector3f v[3], const Vector3f co
 
 static void clip_space_to_screen(Vector3f *clip_verts, Vector3f *screen_verts, size_t count, int origin_x, int origin_y) {
     for(int i = 0; i < count; i++) {
-        // TODO: Perspective divide in another step
-        float z = -1.0 / clip_verts[i].z;
+
+        float CAMERA_Z = 5;
+
+        float z = -1.0 / (clip_verts[i].z + CAMERA_Z);
         screen_verts[i].x = (int)(clip_verts[i].x * z * 2 * origin_x + origin_x + 0.5f);
         screen_verts[i].y = (int)(clip_verts[i].y * z * 2 * origin_y + origin_y + 0.5f);
     }

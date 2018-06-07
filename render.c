@@ -3,6 +3,7 @@
 #include "font.h"
 #include "matrix.h"
 #include "mymath.h"
+#include "mesh.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -90,9 +91,9 @@ static void triangle(Render_Buffer *buff, const Vector3f v[3], const Vector3f co
             if(w0 >= 0 && w1 >= 0 && w2 >= 0) {
                 float denom = w0 + w1 + w2;
 
-                float bary0 = w0 / denom;                  
-                float bary1 = w1 / denom;                  
-                float bary2 = w2 / denom;                  
+                float bary0 = w0 / denom;
+                float bary1 = w1 / denom;
+                float bary2 = w2 / denom;
 
                 float red    = bary0 * colors[top].x + bary1 * colors[middle].x + bary2 * colors[bottom].x;
                 float blue   = bary0 * colors[top].y + bary1 * colors[middle].y + bary2 * colors[bottom].y;
@@ -116,22 +117,36 @@ static void clip_space_to_screen(Vector3f *screen_verts, const Vector3f *const c
     }
 }
 
+
+static void render_mesh(Render_Buffer *buff, const Mesh *const mesh, const Matrix3x3f *const camera_rot, const Vector3f *const camera_pos) {
+    int origin_x = buff->width / 2;
+    int origin_y = buff->height / 2;
+
+    for(int i = 0; i < mesh->n_indices; i+=3) {
+        Vector3f temp_triangle[3];
+        Vector3f temp_colors[3];
+
+        memcpy(temp_triangle, mesh->positions + mesh->indices[i], sizeof(Vector3f));
+        memcpy(temp_triangle + 1, mesh->positions + mesh->indices[i + 1], sizeof(Vector3f));
+        memcpy(temp_triangle + 2, mesh->positions + mesh->indices[i + 2], sizeof(Vector3f));
+
+        memcpy(temp_colors, mesh->colors + mesh->indices[i], sizeof(Vector3f));
+        memcpy(temp_colors + 1, mesh->colors + mesh->indices[i + 1], sizeof(Vector3f));
+        memcpy(temp_colors + 2, mesh->colors + mesh->indices[i + 2], sizeof(Vector3f));
+
+        transform_vectors(temp_triangle, 3, camera_rot, camera_pos);
+        clip_space_to_screen(temp_triangle, temp_triangle, 3, origin_x, origin_y);
+
+        triangle(buff, temp_triangle, temp_colors);
+    }
+}
+
+
 void render(Render_Buffer *buff, const Game_State *const game) {
     // Clear the screen
     memset(buff->pixels, 0x22, buff->width * buff->height * sizeof(int));
 
-    Vector3f temp_v[3];
-
-    memcpy(temp_v, game->v, sizeof(Vector3f) * 3);     
-
-    transform_vectors(temp_v, 3, &game->camera_rot, &game->camera_pos);
-
-    int origin_x = buff->width / 2;
-    int origin_y = buff->height / 2;
-
-    clip_space_to_screen(temp_v, temp_v, 3, origin_x, origin_y);
-
-    triangle(buff, temp_v, game->c);
+    render_mesh(buff, &game->mesh, &game->camera_rot, &game->camera_pos);
 
     char s[100] = {};
 

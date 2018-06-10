@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 typedef struct Vector3f {
     float x, y, z;
@@ -56,5 +57,10 @@ static void transform_vectors(Vector3f *vs, size_t count, const Matrix3x3f *cons
          
     }
 }
+
+static void print_vect(const Vector3f *v) {
+    printf("(%f, %f, %f)", v->x, v->y, v->z);
+}
+
 
 #endif

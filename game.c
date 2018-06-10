@@ -3,6 +3,7 @@
 #include <math.h>
 
 #include "matrix.h"
+#include "mesh.h"
 
 #include "game.h"
 
@@ -13,49 +14,48 @@ void update(Game_State *game) {
 
     // Update the camera based on controller inputs
     if(game->controller.up)
-        game->camera_pos.z -= 0.01f;
+        game->camera_pos.z -= 0.003f;
     if(game->controller.down)
-        game->camera_pos.z += 0.01f;
+        game->camera_pos.z += 0.003f;
+
+    if(game->controller.left)
+        game->camera_pos.x -= 0.003;
+    if(game->controller.right)
+        game->camera_pos.x += 0.003;
+
+    float c = cos(0.004f);
+    float s = sin(0.004f);
+
+    Matrix3x3f mat = {
+        c, -s, 0,
+        s, c, 0,
+        0, 0, 0,
+    };
+
+    transform_vectors(game->mesh->positions, game->mesh->n_vertices, &mat, NULL);
 }
 
 void initialize_game(Game_State *game) {
-    game->mesh.n_vertices = 3;
-    game->mesh.n_indices = 3;
 
-    game->mesh.positions = malloc(sizeof(Vector3f) * 3);
-    game->mesh.colors = malloc(sizeof(Vector3f) * 3);
-    game->mesh.indices = malloc(sizeof(int) * 3);
 
-    // Triangle position
-    game->mesh.positions[0].x = 0.0f;
-    game->mesh.positions[0].y = 1.0f;
-    game->mesh.positions[0].z = 0.0f;
+    float positions[] = {
+        0.0, 0.8, 0,
+        -0.4, 0, 0,
+        0.4, 0, 0,
+        0.0, -0.8, 0,
+    };
 
-    game->mesh.positions[1].x = -1.0f;
-    game->mesh.positions[1].y = -1.0f;
-    game->mesh.positions[1].z = 0.0f;
+    float colors[] = {
+        0.0f, 0.0f, 0.0f,
+        1.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f,
+        1.0f, 1.0f, 1.0f,
+    };
 
-    game->mesh.positions[2].x = 1.0f;
-    game->mesh.positions[2].y = -0.5f;
-    game->mesh.positions[2].z = 0.0f;
+    int indices[] = {0, 1, 2, 3, 2, 1};
 
-    // Triangle Color
-    game->mesh.colors[0].x = 1.0f;
-    game->mesh.colors[0].y = 0.0f;
-    game->mesh.colors[0].z = 0.0f;
-
-    game->mesh.colors[1].x = 0.0f;
-    game->mesh.colors[1].y = 1.0f;
-    game->mesh.colors[1].z = 0.0f;
-
-    game->mesh.colors[2].x = 0.0f;
-    game->mesh.colors[2].y = 0.0f;
-    game->mesh.colors[2].z = 1.0f;
-
-    // Mesh Indices
-    game->mesh.indices[0] = 0;
-    game->mesh.indices[1] = 1;
-    game->mesh.indices[2] = 2;
+    game->mesh = create_mesh(4, 6);
+    fill_mesh(positions, colors, indices, 4, 6, game->mesh);
 
     // Camera position and rotation
     load_identity_matrix(&game->camera_rot);

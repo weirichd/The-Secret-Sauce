@@ -12,7 +12,7 @@ typedef struct Controller {
 } Controller;
 
 typedef struct Game_State {
-    Mesh mesh;
+    Mesh *mesh;
 
     Matrix3x3f camera_rot;
     Vector3f camera_pos;

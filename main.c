@@ -11,10 +11,10 @@
 
 int main(int argc, char* argv[]) {
 
-    int width = 250;
-    int height = 250;
+    int width = 100;
+    int height = 100;
 
-    int upscale_factor = 2;
+    int upscale_factor = 5;
 
     SDL_Init(SDL_INIT_EVERYTHING);
 
@@ -50,10 +50,51 @@ int main(int argc, char* argv[]) {
             case SDL_QUIT:
                 quit = 1;
                 break;
-        }
 
-        game->controller.down = 1;
+			// TODO: Handle keyboard events elsewhere
+			case SDL_KEYDOWN:
+				//Select surfaces based on key press
+				switch(event.key.keysym.sym ) {
+					case SDLK_UP:
+						game->controller.up = 1;
+						break;
 
+					case SDLK_DOWN:
+						game->controller.down = 1;
+						break;
+
+					case SDLK_LEFT:
+						game->controller.left = 1;
+						break;
+
+					case SDLK_RIGHT:
+						game->controller.right = 1;
+						break;
+                    case SDLK_ESCAPE:
+                        quit = 1;
+				}
+				break;
+			case SDL_KEYUP:
+				//Select surfaces based on key press
+				switch(event.key.keysym.sym ) {
+					case SDLK_UP:
+						game->controller.up = 0;
+						break;
+
+					case SDLK_DOWN:
+						game->controller.down = 0;
+						break;
+
+					case SDLK_LEFT:
+						game->controller.left = 0;
+						break;
+
+					case SDLK_RIGHT:
+						game->controller.right = 0;
+						break;
+				}
+				break;
+		}
         update(game);
         render(rbuffer, game);
 

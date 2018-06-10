@@ -32,27 +32,25 @@ void update(Game_State *game) {
         0, 0, 0,
     };
 
-    transform_vectors(game->mesh->positions, game->mesh->n_vertices, &mat, NULL);
+//    transform_vectors(game->mesh->positions, game->mesh->n_vertices, &mat, NULL);
 }
 
 void initialize_game(Game_State *game) {
-
-
     float positions[] = {
-        0.0, 0.8, 0,
-        -0.4, 0, 0,
-        0.4, 0, 0,
-        0.0, -0.8, 0,
+        1, 1, 0,
+        -1, -1, 0,
+        -1, 1, 0,
+        1, -1, 0,
     };
 
     float colors[] = {
-        0.0f, 0.0f, 0.0f,
         1.0f, 0.0f, 0.0f,
-        0.0f, 1.0f, 0.0f,
-        1.0f, 1.0f, 1.0f,
+        0.1f, 0.1f, 0.2f,
+        0.0f, 0.0f, 1.0f,
+        0.2f, 0.1f, 0.1f,
     };
 
-    int indices[] = {0, 1, 2, 3, 2, 1};
+    int indices[] = {0, 1, 2, 1, 0, 3};
 
     game->mesh = create_mesh(4, 6);
     fill_mesh(positions, colors, indices, 4, 6, game->mesh);

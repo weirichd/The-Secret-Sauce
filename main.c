@@ -11,10 +11,10 @@
 
 int main(int argc, char* argv[]) {
 
-    int width = 100;
-    int height = 100;
+    int width = 200;
+    int height = 200;
 
-    int upscale_factor = 5;
+    int upscale_factor = 4;
 
     SDL_Init(SDL_INIT_EVERYTHING);
 
@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
             SDL_WINDOWPOS_CENTERED,
             SDL_WINDOWPOS_CENTERED,
             width * upscale_factor, height * upscale_factor,
-            SDL_WINDOW_RESIZABLE);
+            SDL_WINDOW_RESIZABLE | SDL_WINDOW_BORDERLESS);
 
 
     if (window == NULL) {
@@ -56,18 +56,19 @@ int main(int argc, char* argv[]) {
 				//Select surfaces based on key press
 				switch(event.key.keysym.sym ) {
 					case SDLK_UP:
+					case SDLK_w:
 						game->controller.up = 1;
 						break;
-
 					case SDLK_DOWN:
+					case SDLK_s:
 						game->controller.down = 1;
 						break;
-
 					case SDLK_LEFT:
+					case SDLK_a:
 						game->controller.left = 1;
 						break;
-
 					case SDLK_RIGHT:
+					case SDLK_d:
 						game->controller.right = 1;
 						break;
                     case SDLK_ESCAPE:
@@ -78,18 +79,19 @@ int main(int argc, char* argv[]) {
 				//Select surfaces based on key press
 				switch(event.key.keysym.sym ) {
 					case SDLK_UP:
+					case SDLK_w:
 						game->controller.up = 0;
 						break;
-
 					case SDLK_DOWN:
+					case SDLK_s:
 						game->controller.down = 0;
 						break;
-
 					case SDLK_LEFT:
+					case SDLK_a:
 						game->controller.left = 0;
 						break;
-
 					case SDLK_RIGHT:
+					case SDLK_d:
 						game->controller.right = 0;
 						break;
 				}

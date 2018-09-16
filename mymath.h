@@ -24,7 +24,13 @@ static inline void clampf(float *x, float min, float max) {
         *x = max;
 }
 
-// TODO: Optimize this if it becomes an issue
+static inline void clampi(int *x, int min, int max) {
+    if(*x < min)
+        *x = min;
+    if(*x > max)
+        *x = max;
+}
+
 static inline int int_min3(int a, int b, int c) {
     int t = a;
     if (t > b) t = b;
@@ -33,7 +39,6 @@ static inline int int_min3(int a, int b, int c) {
     return t;
 }
 
-// TODO: Optimize this if it becomes an issue
 static inline int int_max3(int a, int b, int c) {
     int t = a;
     if (t < b) t = b;

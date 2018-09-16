@@ -67,6 +67,11 @@ static void rasterize_triangle(Render_Buffer *buff, const Vector3f v[3], const C
     int miny = int_min3(y0, y1, y2);
     int maxy = int_max3(y0, y1, y2);
 
+    clampi(&minx, 0, buff->width);
+    clampi(&maxx, 0, buff->width);
+    clampi(&miny, 0, buff->height);
+    clampi(&maxy, 0, buff->height);
+
     // Scan through bounding rectangle
     for(int y = miny; y <= maxy; y++) {
         for(int x = minx; x <= maxx; x++) {

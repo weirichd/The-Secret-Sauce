@@ -27,12 +27,12 @@ void update(Game_State *game) {
     float s = sin(0.004f);
 
     Matrix3x3f mat = {
-        c, -s, 0,
-        s, c, 0,
-        0, 0, 0,
+        c, 0, -s,
+        0, 1, 0,
+        s, 0, c,
     };
 
-//    transform_vectors(game->mesh->positions, game->mesh->n_vertices, &mat, NULL);
+    transform_vectors(game->mesh->positions, game->mesh->n_vertices, &mat, NULL);
 }
 
 void initialize_game(Game_State *game) {

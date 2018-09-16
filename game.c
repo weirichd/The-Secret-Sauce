@@ -1,14 +1,12 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
 
 #include "matrix.h"
 #include "mesh.h"
 
 #include "game.h"
 
-float p = 3.14159f;
-float dt = 0.003f;
+#include "square.h"
 
 void update(Game_State *game) {
 
@@ -23,37 +21,18 @@ void update(Game_State *game) {
     if(game->controller.right)
         game->camera_pos.x += 0.003;
 
-    float c = cos(0.004f);
-    float s = sin(0.004f);
-
     Matrix3x3f mat = {
-        c, 0, -s,
-        0, 1, 0,
-        s, 0, c,
+        9.99989355e-01,  -2.29997957e-03,  -3.99998933e-03,
+        2.29999797e-03,   9.99997355e-01,   0.00000000e+00,
+        3.99997875e-03,  -9.19996736e-06,   9.99992000e-01
     };
 
     transform_vectors(game->mesh->positions, game->mesh->n_vertices, &mat, NULL);
 }
 
 void initialize_game(Game_State *game) {
-    float positions[] = {
-        1, 1, 0,
-        -1, -1, 0,
-        -1, 1, 0,
-        1, -1, 0,
-    };
-
-    float colors[] = {
-        1.0f, 0.0f, 0.0f,
-        0.1f, 0.1f, 0.2f,
-        0.0f, 0.0f, 1.0f,
-        0.2f, 0.1f, 0.1f,
-    };
-
-    int indices[] = {0, 1, 2, 1, 0, 3};
-
-    game->mesh = create_mesh(4, 6);
-    fill_mesh(positions, colors, indices, 4, 6, game->mesh);
+    game->mesh = create_mesh(n_square_vertices, n_square_indices);
+    fill_mesh(square_positions, square_colors, square_indices, n_square_vertices, n_square_indices, game->mesh);
 
     // Camera position and rotation
     load_identity_matrix(&game->camera_rot);

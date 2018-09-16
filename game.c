@@ -4,6 +4,7 @@
 
 #include "matrix.h"
 #include "mesh.h"
+#include "objloader.h"
 
 #include "game.h"
 
@@ -36,24 +37,8 @@ void update(Game_State *game) {
 }
 
 void initialize_game(Game_State *game) {
-    float positions[] = {
-        1, 1, 0,
-        -1, -1, 0,
-        -1, 1, 0,
-        1, -1, 0,
-    };
-
-    float colors[] = {
-        1.0f, 0.0f, 0.0f,
-        0.1f, 0.1f, 0.2f,
-        0.0f, 0.0f, 1.0f,
-        0.2f, 0.1f, 0.1f,
-    };
-
-    int indices[] = {0, 1, 2, 1, 0, 3};
-
-    game->mesh = create_mesh(4, 6);
-    fill_mesh(positions, colors, indices, 4, 6, game->mesh);
+    game->mesh = load_mesh_from_obj("dodecahedron.obj");
+//    game->mesh = load_mesh_from_obj("square.obj");
 
     // Camera position and rotation
     load_identity_matrix(&game->camera_rot);

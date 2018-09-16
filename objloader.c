@@ -15,7 +15,8 @@ typedef struct IntLL {
     struct IntLL *next;
 } IntLL;
 
-int main() {
+
+Mesh *load_mesh_from_obj(const char *obj_file) {
     FloatLL *pos_head = calloc(1, sizeof(FloatLL));
     FloatLL *pos_tail = pos_head;
 
@@ -25,13 +26,12 @@ int main() {
     int num_poss = 0;
     int num_inds = 0;
 
-
     FILE *fp;
 
     char buffer[255] = {};
     char str[100] = {};
 
-    fp = fopen("dodecahedron.obj", "r");
+    fp = fopen(obj_file, "r");
 
 
     // Read obj file data into linked lists
@@ -63,12 +63,39 @@ int main() {
 
     fclose(fp);
 
-    printf("-----------\n");
-    printf("READ:\n");
-    printf("Verts: %d    Indices: %d\n", num_poss, num_inds);
-    printf("-----------\n");
+    printf("Read %d vertices and %d indices\n", num_poss / 3, num_inds);
 
     // Convert linked lists to normal arrays
+    float positions[num_poss];
+    float colors[num_poss];
+    int indices[num_inds];
 
-    return 0;
+    FloatLL *current_pos = pos_head;
+    for(int i = 0; i < num_poss; i++) {
+        
+        positions[i] = current_pos->x;
+        colors[i] = (float)rand()/(float)(RAND_MAX);
+        FloatLL *next_pos = current_pos->next;
+        //free(current_pos);
+        current_pos = next_pos;
+    }
+
+    printf("I got here\n");
+
+    IntLL *current_ind = ind_head;
+    for(int i = 0; i < num_poss; i++) {
+       indices[i] = current_ind->i;
+       IntLL *next_ind = current_ind->next;
+//       free(current_ind);
+       current_ind = next_ind;
+    }
+
+    Mesh *mesh = create_mesh(num_poss / 3, num_inds);
+
+    fill_mesh(positions, colors, indices,  mesh->n_vertices, mesh->n_indices, mesh);
+
+    printf("I got here\n");
+
+    return mesh;
 }
+

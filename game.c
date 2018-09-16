@@ -6,7 +6,6 @@
 
 #include "game.h"
 
-#include "square.h"
 #include "dodecahedron.h"
 
 void update(Game_State *game) {
@@ -32,9 +31,9 @@ void update(Game_State *game) {
 }
 
 void initialize_game(Game_State *game) {
-    game->mesh = create_mesh(n_dodecahedron_vertices, n_dodecahedron_indices);
-    fill_mesh(dodecahedron_positions, dodecahedron_colors, dodecahedron_indices,
-      n_dodecahedron_vertices, n_dodecahedron_indices, game->mesh);
+    game->mesh = create_mesh(n_mesh_vertices, n_mesh_indices);
+    fill_mesh(mesh_positions, mesh_colors, mesh_indices,
+      n_mesh_vertices, n_mesh_indices, game->mesh);
 
     // Camera position and rotation
     load_identity_matrix(&game->camera_rot);

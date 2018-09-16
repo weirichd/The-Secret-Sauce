@@ -39,19 +39,13 @@ static inline int half_space(int px, int py, int x0, int y0, int x1, int y1) {
 }
 
 
-static inline int interior_point(int *w0, int *w1, int *w2) {
-    // Render both CW and CCW triangles for the time being!
-    if (*w0 <= 0 && *w1 <= 0 && *w2 <= 0) {
-        *w0 = *w0 * -1;
-        *w1 = *w1 * -1;
-        *w2 = *w2 * -1;
-    }
-
-    return *w0 >= 0 && *w1 >= 0 && *w2 >= 0;
+static inline int interior_point(int w0, int w1, int w2) {
+    return w0 >= 0 && w1 >= 0 && w2 >= 0;
 }
 
 
 static void rasterize_triangle(Render_Buffer *buff, const Vector3f v[3], const Color colors[3], const int indices[3]) {
+
     // TODO: Less janky snapping to pixels
     int x0 = (int)(v[indices[0]].x + 0.5f);
     int x1 = (int)(v[indices[1]].x + 0.5f);
@@ -60,6 +54,11 @@ static void rasterize_triangle(Render_Buffer *buff, const Vector3f v[3], const C
     int y0 = (int)(v[indices[0]].y + 0.5f);
     int y1 = (int)(v[indices[1]].y + 0.5f);
     int y2 = (int)(v[indices[2]].y + 0.5f);
+
+    int ccw = half_space(x2, y2, x0, y0, x1, y1);
+
+    if(ccw < 0) // Not a CCW triangle
+      return;
 
     // Bounding rectangle
     int minx = int_min3(x0, x1, x2);
@@ -79,7 +78,7 @@ static void rasterize_triangle(Render_Buffer *buff, const Vector3f v[3], const C
             int w1 = half_space(x, y, x2, y2, x0, y0);
             int w2 = half_space(x, y, x0, y0, x1, y1);
             // When all half-space functions positive, pixel is in triangle
-            if(interior_point(&w0, &w1, &w2)) {
+            if(interior_point(w0, w1, w2)) {
                 float denom = w0 + w1 + w2;
 
                 float bary0 = w0 / denom;

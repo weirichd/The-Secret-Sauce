@@ -6,7 +6,7 @@ sauce: main.o render.o game.o upscale.o mesh.o
 
 render.o: font.h
 
-game.o: square.h dodecahedron.h
+game.o: square.h dodecahedron.h plane.h
 
 clean:
 	rm *.o sauce

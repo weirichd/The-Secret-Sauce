@@ -15,7 +15,10 @@ float square_colors[] = {
     1.0f, 1.0f, 1.0f,
 };
 
-int square_indices[] = {0, 1, 2, 1, 0, 3};
+int square_indices[] = {
+  0, 1, 2,
+  1, 0, 3
+};
 
 int n_square_indices = sizeof(square_indices) / sizeof(int);
 

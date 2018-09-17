@@ -3,6 +3,7 @@
 
 #include "matrix.h"
 #include "mesh.h"
+#include "texture.h"
 
 typedef struct Controller {
     int up;
@@ -13,6 +14,7 @@ typedef struct Controller {
 
 typedef struct Game_State {
     Mesh *mesh;
+    Texture *texture;
 
     Matrix3x3f camera_rot;
     Vector3f camera_pos;

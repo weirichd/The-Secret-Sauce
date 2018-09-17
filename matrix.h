@@ -5,6 +5,10 @@
 #include <string.h>
 #include <stdio.h>
 
+typedef struct Vector2f {
+    float x, y;
+} Vector2f;
+
 typedef struct Vector3f {
     float x, y, z;
 } Vector3f;
@@ -33,7 +37,7 @@ static void affine_transform3f(Vector3f *result, const Matrix3x3f *const A, cons
     result->x += b->x;
     result->y += b->y;
     result->z += b->z;
-} 
+}
 
 static void perspective_projection(Vector3f *dest, const Vector3f *const src) {
    dest->z = -1.0f / src->z;
@@ -42,19 +46,19 @@ static void perspective_projection(Vector3f *dest, const Vector3f *const src) {
 }
 
 static void load_identity_matrix(Matrix3x3f *dest) {
-   memset(dest, 0, sizeof(Matrix3x3f)); 
+   memset(dest, 0, sizeof(Matrix3x3f));
    dest->m00 = dest->m11 = dest->m22 = 1.0f;
 }
 
-// Operate in place on an array of verticies by an affine transform. 
+// Operate in place on an array of verticies by an affine transform.
 // If b is NULL, then only matrix multiply
 static void transform_vectors(Vector3f *vs, size_t count, const Matrix3x3f *const A, const Vector3f *const b) {
     for(int i = 0; i < count; i++) {
-        if(b) 
+        if(b)
             affine_transform3f(&vs[i], A, b, &vs[i]);
         else
             matrix_vector_mul3f(&vs[i], A, &vs[i]);
-         
+
     }
 }
 

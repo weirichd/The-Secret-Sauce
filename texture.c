@@ -1,7 +1,10 @@
 #include "texture.h"
 
+#include "mymath.h"
+
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 Texture *create_texture(int width, int height) {
     Texture *texture = malloc(sizeof(Texture));
@@ -24,12 +27,19 @@ void free_texture(Texture *texture) {
 
 
 int lookup_texel(const Texture * const texture, float u, float v) {
-    // TODO: What to to when u, v outside [0, 1] range...
+
+    float epsilon_width = 1.0f / ((float) (2.0f * texture->width));
+    float epsilon_height = 1.0f / ((float) (2.0f * texture->height));
+
+    clampf(&u, epsilon_width, 1.0f - epsilon_width);
+    clampf(&v, epsilon_height, 1.0f - epsilon_height);
 
     int x = (int)(u * texture->width);
     int y = (int)(v * texture->height);
 
     int i = y * texture->width + x;
 
-    return texture->texels[i];
+    int value = texture->texels[i];
+
+    return value;
 }

@@ -21,17 +21,12 @@ void update(Game_State *game) {
     if(game->controller.right)
         game->camera_pos.x += 0.003;
 
-    // Matrix3x3f mat = {
-    //     9.99989355e-01,  -2.29997957e-03,  -3.99998933e-03,
-    //     2.29999797e-03,   9.99997355e-01,   0.00000000e+00,
-    //     3.99997875e-03,  -9.19996736e-06,   9.99992000e-01
-    // };
-
     Matrix3x3f mat = {
-      0.99999200001066668, -0.0039999893333418669, 0,
-      0.0039999893333418669, 0.99999200001066668, 0,
-      0, 0, 1
+        9.99989355e-01,  -2.29997957e-03,  -3.99998933e-03,
+        2.29999797e-03,   9.99997355e-01,   0.00000000e+00,
+        3.99997875e-03,  -9.19996736e-06,   9.99992000e-01
     };
+
 
     transform_vectors(game->mesh->positions, game->mesh->n_vertices, &mat, NULL);
 }
@@ -46,8 +41,8 @@ void initialize_game(Game_State *game) {
               n_mesh_indices,
               game->mesh);
 
-    game->texture = create_texture(2, 2);
-    fill_texture_with_data(game->texture, texture_data, 2, 2);
+    game->texture = create_texture(3, 3);
+    fill_texture_with_data(game->texture, texture_data, 3, 3);
 
     // Camera position and rotation
     load_identity_matrix(&game->camera_rot);

@@ -28,8 +28,9 @@ int mesh_indices[] = {
 };
 
 int texture_data[] = {
-    0xFFFF0000, 0xFF00FF00,
-    0xFF0000FF, 0xFFFFFF00,
+    0xff15b01a, 0xff0343df, 0xffe50000,
+    0xffff028d, 0xff7e1e9c, 0xfff97306,
+    0xffff474c, 0xff069af3, 0xff929591,
 };
 
 int n_mesh_indices = sizeof(mesh_indices) / sizeof(int);

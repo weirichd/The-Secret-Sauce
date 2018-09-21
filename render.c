@@ -40,7 +40,7 @@ static inline int half_space(int px, int py, int x0, int y0, int x1, int y1) {
 
 
 static inline int interior_point(int w0, int w1, int w2) {
-    return w0 >= 0 && w1 >= 0 && w2 >= 0;
+    return (w0 >= 0 && w1 >= 0 && w2 >= 0) && (w0 || w1 || w2);
 }
 
 
@@ -151,6 +151,7 @@ static void rasterize_triangle_texture(Render_Buffer *buff,
                 float bary2 = w2 / denom;
 
                 Vector2f final_uv;
+
                 blend_three_texture_coords(&final_uv,
                                            &tex_coords[indices[0]],
                                            &tex_coords[indices[1]],
@@ -158,6 +159,8 @@ static void rasterize_triangle_texture(Render_Buffer *buff,
                                            bary0,
                                            bary1,
                                            bary2);
+
+
                 int color_hex = lookup_texel(texture, final_uv.x, final_uv.y);
 
                 fill_pixel(buff, x, y, color_hex);

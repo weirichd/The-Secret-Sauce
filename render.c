@@ -44,138 +44,103 @@ static inline int interior_point(int w0, int w1, int w2) {
 }
 
 
-static void rasterize_triangle_colors(Render_Buffer *buff,
-                                      const Vector3f v[3],
-                                      const Color colors[3],
-                                      const int indices[3]) {
-
-    // TODO: Less janky snapping to pixels
-    int x0 = (int)(v[indices[0]].x + 0.5f);
-    int x1 = (int)(v[indices[1]].x + 0.5f);
-    int x2 = (int)(v[indices[2]].x + 0.5f);
-
-    int y0 = (int)(v[indices[0]].y + 0.5f);
-    int y1 = (int)(v[indices[1]].y + 0.5f);
-    int y2 = (int)(v[indices[2]].y + 0.5f);
-
-    int ccw = half_space(x2, y2, x0, y0, x1, y1);
-
-    if(ccw < 0) // Not a CCW triangle
-      return;
-
-    // Bounding rectangle
-    int minx = int_min3(x0, x1, x2);
-    int maxx = int_max3(x0, x1, x2);
-    int miny = int_min3(y0, y1, y2);
-    int maxy = int_max3(y0, y1, y2);
-
-    clampi(&minx, 0, buff->width);
-    clampi(&maxx, 0, buff->width);
-    clampi(&miny, 0, buff->height);
-    clampi(&maxy, 0, buff->height);
-
-    // Scan through bounding rectangle
-    for(int y = miny; y <= maxy; y++) {
-        for(int x = minx; x <= maxx; x++) {
-            int w0 = half_space(x, y, x1, y1, x2, y2);
-            int w1 = half_space(x, y, x2, y2, x0, y0);
-            int w2 = half_space(x, y, x0, y0, x1, y1);
-            // When all half-space functions positive, pixel is in triangle
-            if(interior_point(w0, w1, w2)) {
-                float denom = w0 + w1 + w2;
-
-                float bary0 = w0 / denom;
-                float bary1 = w1 / denom;
-                float bary2 = w2 / denom;
-
-                Color final_color;
-                blend_three_colors(&final_color,
-                                   &colors[indices[0]],
-                                   &colors[indices[1]],
-                                   &colors[indices[2]],
-                                   bary0,
-                                   bary1,
-                                   bary2);
-                int color_hex = color_to_rbg(&final_color);
-
-                fill_pixel(buff, x, y, color_hex);
-            }
-        }
-    }
-}
-
-
-static void rasterize_triangle_texture(Render_Buffer *buff,
-                                       const Vector3f v[3],
-                                       const Vector2f tex_coords[3],
-                                       const int indices[3],
-                                       const Texture *texture) {
-
-    // TODO: Less janky snapping to pixels
-    int x0 = (int)(v[indices[0]].x + 0.5f);
-    int x1 = (int)(v[indices[1]].x + 0.5f);
-    int x2 = (int)(v[indices[2]].x + 0.5f);
-
-    int y0 = (int)(v[indices[0]].y + 0.5f);
-    int y1 = (int)(v[indices[1]].y + 0.5f);
-    int y2 = (int)(v[indices[2]].y + 0.5f);
-
-    int ccw = half_space(x2, y2, x0, y0, x1, y1);
-
-    if(ccw < 0) // Not a CCW triangle
-      return;
-
-    // Bounding rectangle
-    int minx = int_min3(x0, x1, x2);
-    int maxx = int_max3(x0, x1, x2);
-    int miny = int_min3(y0, y1, y2);
-    int maxy = int_max3(y0, y1, y2);
-
-    clampi(&minx, 0, buff->width);
-    clampi(&maxx, 0, buff->width);
-    clampi(&miny, 0, buff->height);
-    clampi(&maxy, 0, buff->height);
-
-    // Scan through bounding rectangle
-    for(int y = miny; y <= maxy; y++) {
-        for(int x = minx; x <= maxx; x++) {
-            int w0 = half_space(x, y, x1, y1, x2, y2);
-            int w1 = half_space(x, y, x2, y2, x0, y0);
-            int w2 = half_space(x, y, x0, y0, x1, y1);
-            // When all half-space functions positive, pixel is in triangle
-            if(interior_point(w0, w1, w2)) {
-                float denom = w0 + w1 + w2;
-
-                float bary0 = w0 / denom;
-                float bary1 = w1 / denom;
-                float bary2 = w2 / denom;
-
-                Vector2f final_uv;
-
-                blend_three_texture_coords(&final_uv,
-                                           &tex_coords[indices[0]],
-                                           &tex_coords[indices[1]],
-                                           &tex_coords[indices[2]],
-                                           bary0,
-                                           bary1,
-                                           bary2);
-
-
-                int color_hex = lookup_texel(texture, final_uv.x, final_uv.y);
-
-                fill_pixel(buff, x, y, color_hex);
-            }
-        }
-    }
-}
-
-
 static void clip_space_to_screen(Vector3f *verts, size_t count, int origin_x, int origin_y) {
     for(int i = 0; i < count; i++) {
         float z = -1.0 / verts[i].z;
         verts[i].x = (int)(-verts[i].x * z * 2 * origin_x + origin_x + 0.5f);
         verts[i].y = (int)(verts[i].y * z * 2 * origin_y + origin_y + 0.5f);
     }
+}
+
+
+static void rasterize_triangle(Render_Buffer *buff,
+                               const Vector3f v[3],
+                               const Color colors[3],
+                               const Vector2f tex_coords[3],
+                               const int indices[3],
+                               const Texture *texture) {
+
+    Vector3f vv[3];
+    memcpy(vv, &v[indices[0]], sizeof(Vector3f));
+    memcpy(vv + 1, &v[indices[1]], sizeof(Vector3f));
+    memcpy(vv + 2, &v[indices[2]], sizeof(Vector3f));
+
+    int origin_x = buff->width / 2;
+    int origin_y = buff->height / 2;
+
+    clip_space_to_screen(vv, 3, origin_x, origin_y);
+
+    // TODO: Less janky snapping to pixels
+    int x0 = (int)(vv[0].x + 0.5f);
+    int x1 = (int)(vv[1].x + 0.5f);
+    int x2 = (int)(vv[2].x + 0.5f);
+
+    int y0 = (int)(vv[0].y + 0.5f);
+    int y1 = (int)(vv[1].y + 0.5f);
+    int y2 = (int)(vv[2].y + 0.5f);
+
+    int ccw = half_space(x2, y2, x0, y0, x1, y1);
+
+    if(ccw < 0) // Not a CCW triangle
+     return;
+
+    // Bounding rectangle
+    int minx = int_min3(x0, x1, x2);
+    int maxx = int_max3(x0, x1, x2);
+    int miny = int_min3(y0, y1, y2);
+    int maxy = int_max3(y0, y1, y2);
+
+    clampi(&minx, 0, buff->width);
+    clampi(&maxx, 0, buff->width);
+    clampi(&miny, 0, buff->height);
+    clampi(&maxy, 0, buff->height);
+
+    // Scan through bounding rectangle
+    for(int y = miny; y <= maxy; y++) {
+       for(int x = minx; x <= maxx; x++) {
+           int w0 = half_space(x, y, x1, y1, x2, y2);
+           int w1 = half_space(x, y, x2, y2, x0, y0);
+           int w2 = half_space(x, y, x0, y0, x1, y1);
+           // When all half-space functions positive, pixel is in triangle
+           if(interior_point(w0, w1, w2)) {
+               float denom = w0 + w1 + w2;
+
+               float bary0 = w0 / denom;
+               float bary1 = w1 / denom;
+               float bary2 = w2 / denom;
+
+               int color_hex = 0xFFFFFFFF;
+
+               if (colors) {
+                   Color final_color;
+
+                   blend_three_colors(&final_color,
+                                      &colors[indices[0]],
+                                      &colors[indices[1]],
+                                      &colors[indices[2]],
+                                      bary0,
+                                      bary1,
+                                      bary2);
+                  color_hex = color_to_rbg(&final_color);
+               }
+
+               if (texture) {
+                   Vector2f final_uv;
+
+                   blend_three_texture_coords(&final_uv,
+                                              &tex_coords[indices[0]],
+                                              &tex_coords[indices[1]],
+                                              &tex_coords[indices[2]],
+                                              bary0,
+                                              bary1,
+                                              bary2);
+                   color_hex = lookup_texel(texture, final_uv.x, final_uv.y);
+               }
+
+               fill_pixel(buff, x, y, color_hex);
+           }
+       }
+   }
 }
 
 
@@ -192,8 +157,6 @@ static void render_mesh(Render_Buffer *buff,
                         const Texture *const texture,
                         const Matrix3x3f *const camera_rot,
                         const Vector3f *const camera_pos) {
-    int origin_x = buff->width / 2;
-    int origin_y = buff->height / 2;
 
     // Make a temporary copy of the mesh's vertex positions to transform
     Vector3f *temp_vertices = malloc(3 * sizeof(Vector3f) * mesh->n_vertices);
@@ -201,10 +164,9 @@ static void render_mesh(Render_Buffer *buff,
 
     // Transform the temporary copy
     transform_vectors(temp_vertices, mesh->n_vertices, camera_rot, camera_pos);
-    clip_space_to_screen(temp_vertices, mesh->n_vertices, origin_x, origin_y);
 
     for(int i = 0; i < mesh->n_indices; i+=3) {
-        rasterize_triangle_texture(buff, temp_vertices, mesh->uv_coords, mesh->indices + i, texture);
+        rasterize_triangle(buff, temp_vertices, mesh->colors, mesh->uv_coords, mesh->indices + i, NULL);
     }
 
     free(temp_vertices);

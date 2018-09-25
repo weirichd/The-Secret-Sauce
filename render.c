@@ -33,56 +33,48 @@ static inline void fill_pixel(Render_Buffer *buff, int x, int y, int color) {
 }
 
 
-// NOTE: This is vulnerable to integer overflow if the screen coordinates are larger than 2^15
-static inline int half_space(int px, int py, int x0, int y0, int x1, int y1) {
+static inline float half_space(float px, float py, float x0, float y0, float x1, float y1) {
     return (px - x0) * (y1 - y0) - (py - y0) * (x1 - x0);
 }
 
 
-static inline int interior_point(int w0, int w1, int w2) {
-    return (w0 >= 0 && w1 >= 0 && w2 >= 0) && (w0 || w1 || w2);
+static inline int interior_point(float w0, float w1, float w2) {
+    return (w0 >= 0 && w1 >= 0 && w2 >= 0);
 }
 
+static inline float interpolate_vertex_attribute(float w0, float z0, float a0,
+                                                 float w1, float z1, float a1,
+                                                 float w2, float z2, float a2) {
 
-static void clip_space_to_screen(Vector3f *verts, size_t count, int origin_x, int origin_y) {
-    for(int i = 0; i < count; i++) {
-        float z = -1.0 / verts[i].z;
-        verts[i].x = (int)(-verts[i].x * z * 2 * origin_x + origin_x + 0.5f);
-        verts[i].y = (int)(verts[i].y * z * 2 * origin_y + origin_y + 0.5f);
-    }
+    return (w0 * a0 * z0 + w1 * a1 * z1 + w2 * a2 * z2) / (w0 * z0 + w1 * z1 + w2 * z2);
 }
-
 
 static void rasterize_triangle(Render_Buffer *buff,
-                               const Vector3f v[3],
-                               const Color colors[3],
-                               const Vector2f tex_coords[3],
+                               const Vector3f *v,
+                               const Color *colors,
+                               const Vector2f *tex_coords,
                                const int indices[3],
                                const Texture *texture) {
 
-    Vector3f vv[3];
-    memcpy(vv, &v[indices[0]], sizeof(Vector3f));
-    memcpy(vv + 1, &v[indices[1]], sizeof(Vector3f));
-    memcpy(vv + 2, &v[indices[2]], sizeof(Vector3f));
+    float origin_x = buff->width * 0.5f;
+    float origin_y = buff->height * 0.5f;
 
-    int origin_x = buff->width / 2;
-    int origin_y = buff->height / 2;
+    float z0 = -2.0 / v[indices[0]].z;
+    float z1 = -2.0 / v[indices[1]].z;
+    float z2 = -2.0 / v[indices[2]].z;
 
-    clip_space_to_screen(vv, 3, origin_x, origin_y);
+    float x0 = (1.0f - v[indices[0]].x * z0) * origin_x + 0.5f;
+    float x1 = (1.0f - v[indices[1]].x * z1) * origin_x + 0.5f;
+    float x2 = (1.0f - v[indices[2]].x * z2) * origin_x + 0.5f;
 
-    // TODO: Less janky snapping to pixels
-    int x0 = (int)(vv[0].x + 0.5f);
-    int x1 = (int)(vv[1].x + 0.5f);
-    int x2 = (int)(vv[2].x + 0.5f);
+    float y0 = (1.0f + v[indices[0]].y * z0) * origin_y - 0.5f;
+    float y1 = (1.0f + v[indices[1]].y * z1) * origin_y - 0.5f;
+    float y2 = (1.0f + v[indices[2]].y * z2) * origin_y - 0.5f;
 
-    int y0 = (int)(vv[0].y + 0.5f);
-    int y1 = (int)(vv[1].y + 0.5f);
-    int y2 = (int)(vv[2].y + 0.5f);
+    float area = half_space(x0, y0, x1, y1, x2, y2);
 
-    int ccw = half_space(x2, y2, x0, y0, x1, y1);
-
-    if(ccw < 0) // Not a CCW triangle
-     return;
+    if(area < 0) // Not a CCW triangle
+        return;
 
     // Bounding rectangle
     int minx = int_min3(x0, x1, x2);
@@ -98,16 +90,14 @@ static void rasterize_triangle(Render_Buffer *buff,
     // Scan through bounding rectangle
     for(int y = miny; y <= maxy; y++) {
        for(int x = minx; x <= maxx; x++) {
-           int w0 = half_space(x, y, x1, y1, x2, y2);
-           int w1 = half_space(x, y, x2, y2, x0, y0);
-           int w2 = half_space(x, y, x0, y0, x1, y1);
+           float w0 = half_space(x, y, x1, y1, x2, y2);
+           float w1 = half_space(x, y, x2, y2, x0, y0);
+           float w2 = half_space(x, y, x0, y0, x1, y1);
            // When all half-space functions positive, pixel is in triangle
            if(interior_point(w0, w1, w2)) {
-               float denom = w0 + w1 + w2;
-
-               float bary0 = w0 / denom;
-               float bary1 = w1 / denom;
-               float bary2 = w2 / denom;
+               w0 /= area;
+               w1 /= area;
+               w2 /= area;
 
                int color_hex = 0xFFFFFFFF;
 
@@ -118,22 +108,23 @@ static void rasterize_triangle(Render_Buffer *buff,
                                       &colors[indices[0]],
                                       &colors[indices[1]],
                                       &colors[indices[2]],
-                                      bary0,
-                                      bary1,
-                                      bary2);
+                                      w0,
+                                      w1,
+                                      w2);
                   color_hex = color_to_rbg(&final_color);
                }
 
                if (texture) {
                    Vector2f final_uv;
 
-                   blend_three_texture_coords(&final_uv,
-                                              &tex_coords[indices[0]],
-                                              &tex_coords[indices[1]],
-                                              &tex_coords[indices[2]],
-                                              bary0,
-                                              bary1,
-                                              bary2);
+                   final_uv.x = interpolate_vertex_attribute(w0, z0, tex_coords[indices[0]].x,
+                                                             w1, z1, tex_coords[indices[1]].x,
+                                                             w2, z2, tex_coords[indices[2]].x);
+
+                   final_uv.y = interpolate_vertex_attribute(w0, z0, tex_coords[indices[0]].y,
+                                                             w1, z1, tex_coords[indices[1]].y,
+                                                             w2, z2, tex_coords[indices[2]].y);
+
                    color_hex = lookup_texel(texture, final_uv.x, final_uv.y);
                }
 
@@ -141,14 +132,6 @@ static void rasterize_triangle(Render_Buffer *buff,
            }
        }
    }
-}
-
-
-static void orthographic_projection(Vector3f *verts, size_t count, int screen_w, int screen_h) {
-    for(int i = 0; i < count; i++) {
-        verts[i].x = (int)((verts[i].x *  0.5f + 0.5f) * screen_w + 0.5f);
-        verts[i].y = (int)((verts[i].y * -0.5f + 0.5f) * screen_h + 0.5f); // Buffer y goes + -> down
-    }
 }
 
 
@@ -166,7 +149,7 @@ static void render_mesh(Render_Buffer *buff,
     transform_vectors(temp_vertices, mesh->n_vertices, camera_rot, camera_pos);
 
     for(int i = 0; i < mesh->n_indices; i+=3) {
-        rasterize_triangle(buff, temp_vertices, mesh->colors, mesh->uv_coords, mesh->indices + i, NULL);
+        rasterize_triangle(buff, temp_vertices, NULL, mesh->uv_coords, mesh->indices + i, texture);
     }
 
     free(temp_vertices);

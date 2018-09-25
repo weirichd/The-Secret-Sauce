@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <x86intrin.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "game.h"
 #include "render.h"
@@ -110,6 +111,12 @@ int main(int argc, char* argv[]) {
         game->fps = (int) ( 2.2e9 / delta_cycles ) ;
 
         last_cycle = this_cycle;
+
+        struct timespec sleep_time;
+        sleep_time.tv_sec  = 0;
+        sleep_time.tv_nsec = 15000000L;
+
+        nanosleep(&sleep_time, NULL);
     }
 
     SDL_DestroyWindow(window);

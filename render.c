@@ -59,17 +59,17 @@ static void rasterize_triangle(Render_Buffer *buff,
     float origin_x = buff->width * 0.5f;
     float origin_y = buff->height * 0.5f;
 
-    float z0 = -2.0 / v[indices[0]].z;
-    float z1 = -2.0 / v[indices[1]].z;
-    float z2 = -2.0 / v[indices[2]].z;
+    float z0 = -1.0 / v[indices[0]].z;
+    float z1 = -1.0 / v[indices[1]].z;
+    float z2 = -1.0 / v[indices[2]].z;
 
-    float x0 = (1.0f - v[indices[0]].x * z0) * origin_x + 0.5f;
-    float x1 = (1.0f - v[indices[1]].x * z1) * origin_x + 0.5f;
-    float x2 = (1.0f - v[indices[2]].x * z2) * origin_x + 0.5f;
+    float x0 = (1.0f - v[indices[0]].x * 2.0f * z0) * origin_x + 0.5f;
+    float x1 = (1.0f - v[indices[1]].x * 2.0f * z1) * origin_x + 0.5f;
+    float x2 = (1.0f - v[indices[2]].x * 2.0f * z2) * origin_x + 0.5f;
 
-    float y0 = (1.0f + v[indices[0]].y * z0) * origin_y - 0.5f;
-    float y1 = (1.0f + v[indices[1]].y * z1) * origin_y - 0.5f;
-    float y2 = (1.0f + v[indices[2]].y * z2) * origin_y - 0.5f;
+    float y0 = (1.0f + v[indices[0]].y * 2.0f * z0) * origin_y - 0.5f;
+    float y1 = (1.0f + v[indices[1]].y * 2.0f * z1) * origin_y - 0.5f;
+    float y2 = (1.0f + v[indices[2]].y * 2.0f * z2) * origin_y - 0.5f;
 
     float area = half_space(x0, y0, x1, y1, x2, y2);
 
@@ -89,49 +89,51 @@ static void rasterize_triangle(Render_Buffer *buff,
 
     // Scan through bounding rectangle
     for(int y = miny; y <= maxy; y++) {
-       for(int x = minx; x <= maxx; x++) {
-           float w0 = half_space(x, y, x1, y1, x2, y2);
-           float w1 = half_space(x, y, x2, y2, x0, y0);
-           float w2 = half_space(x, y, x0, y0, x1, y1);
-           // When all half-space functions positive, pixel is in triangle
-           if(interior_point(w0, w1, w2)) {
-               w0 /= area;
-               w1 /= area;
-               w2 /= area;
+        for(int x = minx; x <= maxx; x++) {
+            float w0 = half_space(x, y, x1, y1, x2, y2);
+            float w1 = half_space(x, y, x2, y2, x0, y0);
+            float w2 = half_space(x, y, x0, y0, x1, y1);
+            // When all half-space functions positive, pixel is in triangle
+            if(interior_point(w0, w1, w2)) {
 
-               int color_hex = 0xFFFFFFFF;
+                int color_hex = 0xFFFFFFFF;
 
-               if (colors) {
-                   Color final_color;
+                if (colors) {
+                    Color final_color;
+    
+                    final_color.red = interpolate_vertex_attribute(w0, z0, colors[indices[0]].red,
+                                                                   w1, z1, colors[indices[1]].red,
+                                                                   w2, z2, colors[indices[2]].red);
 
-                   blend_three_colors(&final_color,
-                                      &colors[indices[0]],
-                                      &colors[indices[1]],
-                                      &colors[indices[2]],
-                                      w0,
-                                      w1,
-                                      w2);
-                  color_hex = color_to_rbg(&final_color);
-               }
+                    final_color.green = interpolate_vertex_attribute(w0, z0, colors[indices[0]].green,
+                                                                     w1, z1, colors[indices[1]].green,
+                                                                     w2, z2, colors[indices[2]].green);
 
-               if (texture) {
-                   Vector2f final_uv;
+                    final_color.blue = interpolate_vertex_attribute(w0, z0, colors[indices[0]].blue,
+                                                                    w1, z1, colors[indices[1]].blue,
+                                                                    w2, z2, colors[indices[2]].blue);
 
-                   final_uv.x = interpolate_vertex_attribute(w0, z0, tex_coords[indices[0]].x,
-                                                             w1, z1, tex_coords[indices[1]].x,
-                                                             w2, z2, tex_coords[indices[2]].x);
+                    color_hex = color_to_rbg(&final_color);
+                }
 
-                   final_uv.y = interpolate_vertex_attribute(w0, z0, tex_coords[indices[0]].y,
-                                                             w1, z1, tex_coords[indices[1]].y,
-                                                             w2, z2, tex_coords[indices[2]].y);
+                if (texture) {
+                    Vector2f final_uv;
 
-                   color_hex = lookup_texel(texture, final_uv.x, final_uv.y);
-               }
+                    final_uv.x = interpolate_vertex_attribute(w0, z0, tex_coords[indices[0]].x,
+                                                              w1, z1, tex_coords[indices[1]].x,
+                                                              w2, z2, tex_coords[indices[2]].x);
 
-               fill_pixel(buff, x, y, color_hex);
-           }
-       }
-   }
+                    final_uv.y = interpolate_vertex_attribute(w0, z0, tex_coords[indices[0]].y,
+                                                              w1, z1, tex_coords[indices[1]].y,
+                                                              w2, z2, tex_coords[indices[2]].y);
+
+                    color_hex = lookup_texel(texture, final_uv.x, final_uv.y);
+                }
+
+                fill_pixel(buff, x, y, color_hex);
+            }
+        }
+    }
 }
 
 
@@ -149,7 +151,7 @@ static void render_mesh(Render_Buffer *buff,
     transform_vectors(temp_vertices, mesh->n_vertices, camera_rot, camera_pos);
 
     for(int i = 0; i < mesh->n_indices; i+=3) {
-        rasterize_triangle(buff, temp_vertices, NULL, mesh->uv_coords, mesh->indices + i, texture);
+        rasterize_triangle(buff, temp_vertices, mesh->colors, mesh->uv_coords, mesh->indices + i, NULL);
     }
 
     free(temp_vertices);

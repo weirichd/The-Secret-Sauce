@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "matrix.h"
 #include "mesh.h"
@@ -12,22 +13,31 @@ void update(Game_State *game) {
 
     // Update the camera based on controller inputs
     if(game->controller.up)
-        game->camera_pos.z -= 0.003f;
+        game->camera_pos.z -= 0.03f;
     if(game->controller.down)
-        game->camera_pos.z += 0.003f;
+        game->camera_pos.z += 0.03f;
 
     if(game->controller.left)
-        game->camera_pos.x -= 0.003;
+        game->camera_pos.x -= 0.03;
     if(game->controller.right)
-        game->camera_pos.x += 0.003;
+        game->camera_pos.x += 0.03;
 
-    Matrix3x3f mat = {
-        9.99989355e-01,  -2.29997957e-03,  -3.99998933e-03,
-        2.29999797e-03,   9.99997355e-01,   0.00000000e+00,
-        3.99997875e-03,  -9.19996736e-06,   9.99992000e-01
+    float t = 0.01f;
+    float s = 0.03f;
+
+    Matrix3x3f mat1 = {
+        cosf(t), -sinf(t), 0.,
+        sinf(t),  cosf(t), 0.,
+        0.     ,  0.     , 1.
     };
 
+    Matrix3x3f mat = {
+        cosf(s), 0, -sinf(s),
+        0.     ,  1.     , 0.,
+        sinf(s),  0, cosf(s)
+    };
 
+    transform_vectors(game->mesh->positions, game->mesh->n_vertices, &mat1, NULL);
     transform_vectors(game->mesh->positions, game->mesh->n_vertices, &mat, NULL);
 }
 
@@ -41,8 +51,8 @@ void initialize_game(Game_State *game) {
               n_mesh_indices,
               game->mesh);
 
-    game->texture = create_texture(3, 3);
-    fill_texture_with_data(game->texture, texture_data, 3, 3);
+    game->texture = create_texture(4, 4);
+    fill_texture_with_data(game->texture, texture_data, 4, 4);
 
     // Camera position and rotation
     load_identity_matrix(&game->camera_rot);

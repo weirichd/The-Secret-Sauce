@@ -15,6 +15,7 @@ Render_Buffer *create_render_buffer(int width, int height) {
     buff->width = width;
     buff->height = height;
     buff->pixels = malloc(sizeof(int) * width * height);
+    buff->zbuffer = malloc(sizeof(float) * width * height);
 
     return buff;
 }
@@ -22,13 +23,15 @@ Render_Buffer *create_render_buffer(int width, int height) {
 
 void free_render_buffer(Render_Buffer *buff) {
     free(buff->pixels);
+    free(buff->zbuffer);
     free(buff);
 }
 
 
-static inline void fill_pixel(Render_Buffer *buff, int x, int y, int color) {
-    if(0 <= x && buff->width > x && 0 <= y && buff->height > y) {
+static inline void fill_pixel(Render_Buffer *buff, int x, int y, float z, int color) {
+    if(0 <= x && buff->width > x && 0 <= y && buff->height > y && buff->zbuffer[x + y * buff->width] > z) {
         buff->pixels[x + y * buff->width] = color;
+        buff->zbuffer[x + y * buff->width] = z;
     }
 }
 
@@ -130,7 +133,9 @@ static void rasterize_triangle(Render_Buffer *buff,
                     color_hex = lookup_texel(texture, final_uv.x, final_uv.y);
                 }
 
-                fill_pixel(buff, x, y, color_hex);
+                float z = (w0 * z0 + w1 * z1 + w2 * z2) / (w0 + w1 + w2);
+
+                fill_pixel(buff, x, y, z, color_hex);
             }
         }
     }
@@ -161,6 +166,7 @@ static void render_mesh(Render_Buffer *buff,
 void render(Render_Buffer *buff, const Game_State *const game) {
     // Clear the screen
     memset(buff->pixels, 0x11, buff->width * buff->height * sizeof(int));
+    memset(buff->zbuffer, 0.0f, buff->width * buff->height * sizeof(float));
 
     render_mesh(buff, game->mesh, game->texture, &game->camera_rot, &game->camera_pos);
 

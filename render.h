@@ -7,6 +7,7 @@ typedef struct Render_Buffer {
     int width;
     int height;
     int *pixels;
+    float *zbuffer;
 } Render_Buffer;
 
 Render_Buffer *create_render_buffer(int width, int height);

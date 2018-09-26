@@ -6,7 +6,7 @@ c header files.
 import sys
 from random import random
 
-file = sys.argv[1]
+file_path = sys.argv[1]
 output_name = sys.argv[2]
 
 header_name = output_name.upper() + '_H'
@@ -14,7 +14,7 @@ header_name = output_name.upper() + '_H'
 positions = []
 indices = []
 
-with open(file, 'r') as f:
+with open(file_path, 'r') as f:
     line = f.readline()
 
     while line:

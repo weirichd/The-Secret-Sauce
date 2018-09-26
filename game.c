@@ -7,7 +7,7 @@
 
 #include "game.h"
 
-#include "square.h"
+#include "triangles.h"
 
 void update(Game_State *game) {
 
@@ -22,8 +22,8 @@ void update(Game_State *game) {
     if(game->controller.right)
         game->camera_pos.x += 0.03;
 
-    float t = 0.01f;
-    float s = 0.03f;
+    float t = 0.03f;
+    float s = 0.02f;
 
     Matrix3x3f mat1 = {
         cosf(t), -sinf(t), 0.,
